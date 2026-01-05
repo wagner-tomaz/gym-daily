@@ -28,10 +28,20 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        body { background-color: black; color: white; -webkit-tap-highlight-color: transparent; }
+        html, body {
+            overscroll-behavior-y: none; /* Impede o efeito elástico/pulo da página */
+            background-color: black; 
+            color: white; 
+            -webkit-tap-highlight-color: transparent;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Mantém o seu estilo de scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #1a1a1a; }
         ::-webkit-scrollbar-thumb { background: #3b0764; border-radius: 3px; }
+        
         /* Ajuste de inputs para mobile */
         input, select, textarea { font-size: 16px !important; } 
     </style>
