@@ -8,6 +8,23 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    'lg': '4px',    // Reduzido (padrão é ~8px)
+                    'xl': '8px',    // Reduzido (padrão é ~12px)
+                    '2xl': '8px',   // Reduzido (padrão é ~16px)
+                    '3xl': '12px',  // Reduzido (padrão é ~24px)
+                    'full': '8px'
+                    // Não alteramos o 'full' para manter botões redondos (ícones) perfeitos
+                }
+            }
+        }
+    }
+    </script>
+
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -198,7 +215,10 @@
         // --- FORMULÁRIO TREINO (CALENDÁRIO) ---
         updateForm: (field, value) => {
             state[field] = value;
-            app.render();
+            // Só renderiza se for o workoutType, pois ele muda a estrutura do formulário (esconde/mostra lista)
+            if (field === 'workoutType') {
+                app.render();
+            }
         },
         handlePhoto: (input) => {
             const file = input.files[0];
@@ -221,7 +241,7 @@
         },
         updateExercise: (index, field, value) => {
             state.exercises[index][field] = value;
-            app.render();
+            // app.render();  <-- REMOVIDO: Não queremos recriar a tela enquanto digita
         },
         
         // NOVO: Carregar rotina no dia do calendário
@@ -397,7 +417,11 @@
         },
         updateRoutineExercise: (i, field, val) => {
             state.routineExercises[i][field] = val;
-            app.render();
+            // Se mudar o TIPO (inferior/superior), precisamos renderizar para atualizar o select de nomes
+            // Se for texto ou numero, não renderiza
+            if (field === 'type') {
+                app.render();
+            }
         },
         saveDayExercises: () => {
             const filtered = state.routineExercises.filter(ex => ex.type && ex.name);
@@ -465,16 +489,15 @@
             let classes = 'aspect-square rounded-xl flex flex-col items-center justify-center font-bold text-sm transition-all active:scale-95 shadow-md ';
             let style = 'background-color: #27272a; color: white;';
             
-            // Lógica de Cores
             if (entry) {
                 if (entry.status === 'rest') {
-                    classes += 'bg-blue-600 text-white shadow-blue-900/50';
+                    classes += 'bg-blue-600 text-white';
                     style = '';
                 } else if (entry.status === 'missed' || (entry.attended === false)) {
-                    classes += 'bg-red-600 text-white shadow-red-900/50';
+                    classes += 'bg-red-600 text-white';
                     style = '';
                 } else if (entry.status === 'attended' || entry.attended) {
-                    classes += 'bg-green-600 text-white shadow-green-900/50';
+                    classes += 'bg-green-600 text-white';
                     style = '';
                 }
             } else {
@@ -484,50 +507,58 @@
             gridHtml += `<button onclick="app.dayClick(${i})" class="${classes}" style="${style}">${i}</button>`;
         }
 
+        // AQUI ESTÁ A MUDANÇA PRINCIPAL NO HTML:
         root.innerHTML = `
-            <div class="flex items-center justify-between mb-6 pt-2">
-                <div>
-                    <h1 class="text-2xl font-bold text-white flex items-center gap-2">
-                        <i data-lucide="dumbbell" class="text-purple-500"></i> Gym Daily
-                    </h1>
-                    <p class="text-zinc-400 text-xs">Sua evolução dia após dia</p>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="app.prevMonth()" class="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-                    <button onclick="app.nextMonth()" class="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
-                </div>
+            <div class="mb-6 pt-2 text-center">
+                <h1 class="text-2xl font-bold text-purple-600 flex items-center justify-center gap-2">
+                    <i data-lucide="dumbbell" class="text-purple-600"></i> Gym Daily
+                </h1>
+                <p class="mt-1 text-zinc-400 text-sm">Sua evolução dia após dia</p>
             </div>
-
-            <div class="bg-zinc-900 rounded-3xl p-4 shadow-xl mb-6 border border-zinc-800">
-                <h2 class="text-center text-lg font-bold text-white mb-4 capitalize">
-                    ${monthNames[state.currentDate.getMonth()]} <span class="text-purple-400">${state.currentDate.getFullYear()}</span>
-                </h2>
-
-                <div class="grid grid-cols-7 gap-2 mb-2">
-                    ${dayNames.map(d => `<div class="text-center text-zinc-500 font-bold text-xs uppercase tracking-wider">${d}</div>`).join('')}
-                </div>
-                
-                <div class="grid grid-cols-7 gap-2">
-                    ${gridHtml}
-                </div>
-            </div>
-
-            <div class="flex justify-center gap-4 mb-6 text-xs font-medium text-zinc-400">
-                <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-green-600 rounded-full"></div>Treino</div>
-                <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-red-600 rounded-full"></div>Falta</div>
-                <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>Descanso</div>
-            </div>
-
-            <div class="flex gap-3">
-                <button onclick="app.exportJSON()" class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 border border-zinc-700 transition-all active:scale-95">
+                  
+                <div class="flex gap-3 mb-6">
+                <button onclick="app.exportJSON()" class="flex-1 bg-zinc-900 hover:bg-purple-800 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 border border-zinc-800 transition-all active:scale-95">
                     <i data-lucide="download" class="w-4 h-4"></i> Exportar
                 </button>
-                <label class="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer border border-zinc-700 transition-all active:scale-95">
+                <label class="flex-1 bg-zinc-900 hover:bg-purple-800 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer border border-zinc-800 transition-all active:scale-95">
                     <i data-lucide="upload" class="w-4 h-4"></i> Importar
                     <input type="file" accept=".json" class="hidden" onchange="app.importJSON(this)">
                 </label>
-            </div>
-        `;
+                </div>
+
+                <div class="bg-zinc-900 rounded-3xl p-4 mb-6 border border-zinc-800">
+                    <div class="flex items-center justify-between mb-4">
+                        <button onclick="app.prevMonth()" class="p-2 rounded-full bg-zinc-800 hover:bg-purple-700 text-zinc-400 hover:text-white transition-colors">
+                            <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                        </button>
+
+                        <h2 class="text-lg font-bold text-white capitalize">
+                            ${monthNames[state.currentDate.getMonth()]} <span class="text-purple-700">${state.currentDate.getFullYear()}</span>
+                        </h2>
+
+                        <button onclick="app.nextMonth()" class="p-2 rounded-full bg-zinc-800 hover:bg-purple-700 text-zinc-400 hover:text-white transition-colors">
+                            <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-7 gap-2 mb-2">
+                        ${dayNames.map(d => `<div class="text-center text-zinc-500 font-bold text-xs uppercase tracking-wider">${d}</div>`).join('')}
+                    </div>
+                    
+                    <div class="grid grid-cols-7 gap-2">
+                        ${gridHtml}
+                    </div>
+                </div>
+
+                <div class="flex justify-center gap-4 mb-6 text-xs font-medium text-zinc-400">
+                    <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-green-600 rounded-full"></div>Treino</div>
+                    <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-red-600 rounded-full"></div>Falta</div>
+                    <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>Descanso</div>
+                </div>
+
+                <div class="pt-36 text-center"> <p class="text-zinc-700 text-xs">criado por: @wagnerwtomaz</p> </div>
+ 
+        `
     }
 
     function renderRoutineTab(root) {
@@ -538,7 +569,7 @@
             // --- LISTA DE ROTINAS ---
             const listHtml = state.routines.map(r => `
                 <div class="group w-full rounded-2xl p-4 mb-3 bg-zinc-900 border border-zinc-800 hover:border-purple-900 transition-all relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-purple-600"></div>
+                    <div class="absolute top-0 left-0 w-1 h-full bg-purple-700"></div>
                     <div class="flex justify-between items-center">
                         <div onclick="app.openRoutineView(${r.id})" class="flex-1 cursor-pointer">
                             <h3 class="text-lg font-bold text-white">${r.name}</h3>
@@ -566,7 +597,7 @@
                 </div>
 
                 <div class="flex gap-3 mb-6">
-                    <button onclick="app.createRoutine()" class="flex-1 bg-purple-700 hover:bg-purple-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-purple-900/20 transition-all active:scale-95">
+                    <button onclick="app.createRoutine()" class="flex-1 bg-purple-700 hover:bg-purple-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95">
                         <i data-lucide="plus" class="w-5 h-5"></i> Criar Nova
                     </button>
                      <label class="px-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl flex items-center justify-center cursor-pointer border border-zinc-700 transition-all">
@@ -764,7 +795,7 @@
                          <textarea oninput="app.updateForm('notes', this.value)" class="w-full p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white focus:border-purple-500 outline-none" rows="2" placeholder="Como foi o treino?">${state.notes}</textarea>
                     </div>
 
-                    <button onclick="app.saveData('attended')" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-purple-900/30">Salvar Treino</button>
+                    <button onclick="app.saveData('attended')" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold">Salvar Treino</button>
                     ${state.gymData[state.selectedDay.dateKey] ? `<button onclick="app.deleteEntry()" class="w-full text-red-400 font-semibold py-2">Excluir Registro</button>` : ''}
                 </div>
             `;
@@ -848,7 +879,7 @@
                         </button>
                     `).join('')}
                 </div>
-                <button onclick="app.saveRoutine()" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-purple-900/30">Salvar Rotina</button>
+                <button onclick="app.saveRoutine()" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold">Salvar Rotina</button>
             `;
         } else {
             // Edição dos Exercícios do Dia
@@ -892,7 +923,7 @@
                     ${state.routineExercises.length ? exList : '<p class="text-zinc-500 text-center py-8">Nenhum exercício adicionado.</p>'}
                 </div>
                 
-                <button onclick="app.saveDayExercises()" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-purple-900/30">Confirmar Dia</button>
+                <button onclick="app.saveDayExercises()" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold">Confirmar Dia</button>
             `;
         }
 
