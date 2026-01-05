@@ -588,9 +588,17 @@
                     <p class="mt-1 text-zinc-400 text-sm">Sua evolução dia após dia</p>
                 </div>
 
-                <button onclick="app.toggleFeatures()" class="w-10 h-10 flex items-center justify-center rounded-full bg-zinc-900 text-purple-500 border border-zinc-800 hover:border-purple-500 transition-colors">
-                    <i data-lucide="info" class="w-5 h-5"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button id="btn-login-action" onclick="window.loginGoogle()" class="flex items-center gap-2 px-3 py-2 rounded-full bg-zinc-900 border border-zinc-800 hover:border-purple-500 transition-colors text-xs font-bold text-white shadow-lg active:scale-95">
+                        <i data-lucide="log-in" class="w-3 h-3"></i>
+                        <span id="btn-login-text">Entrar</span>
+                    </button>
+
+                    <button onclick="app.toggleFeatures()" class="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-900 text-purple-500 border border-zinc-800 hover:border-purple-500 transition-colors active:scale-95">
+                        <i data-lucide="info" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
             </div>
 
 
@@ -1201,5 +1209,32 @@
     });
   }
 </script>
+
+<script>
+
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyA7OU8xkjbPVgUs5z1XExqrKYAP_4TpO4g",
+  authDomain: "gymdaily-app.firebaseapp.com",
+  projectId: "gymdaily-app",
+  storageBucket: "gymdaily-app.firebasestorage.app",
+  messagingSenderId: "1072026357474",
+  appId: "1:1072026357474:web:8e48b13d3b9ad58c5258bb",
+  measurementId: "G-KSXLJJGNKY"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+</script>
+
 </body>
 </html>
