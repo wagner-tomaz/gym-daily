@@ -57,6 +57,7 @@
 <script>
     // --- ESTADO GLOBAL ---
     const state = {
+        viewingImage: null,
         currentTab: 'calendar',
         currentDate: new Date(),
         gymData: JSON.parse(localStorage.getItem('gymTrackerData')) || {},
@@ -93,6 +94,41 @@
     const weekdays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
     const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    
+    // --- MAPA DE GIFS DOS EXERCÍCIOS ---
+    const exerciseGifs = {
+        // --- INFERIOR ---
+        'Agachamento Livre': 'https://media1.tenor.com/m/pdMmsiutWkcAAAAC/gym.gif',
+        'Leg Press 45°': 'https://media1.tenor.com/m/xJh_-w_SxckAAAAC/leg-press.gif',
+        'Cadeira Extensora': 'https://media1.tenor.com/m/bqKtsSuqilQAAAAC/gym.gif',
+        'Mesa Flexora': 'https://media.tenor.com/v1-s1J-VzYMAAAAC/leg-curl-hamstring.gif',
+        'Stiff': 'LINK_AQUI',
+        'Elevação Pélvica': 'https://media.tenor.com/Z4u_VvKzPMAAAAAC/hip-thrust.gif',
+        'Panturrilha em pé': 'LINK_AQUI',
+        'Cadeira Abdutora': 'LINK_AQUI',
+        'Cadeira Adutora': 'LINK_AQUI',
+        'Agachamento Búlgaro': 'https://media.tenor.com/gKqC_g8fCsgAAAAC/bulgarian-split-squat.gif',
+        'Afundo': 'LINK_AQUI',
+        'Levantamento Terra': 'https://media.tenor.com/Ex1QhWlC0koAAAAC/deadlift-barbell.gif',
+        
+        // --- SUPERIOR ---
+        'Supino Reto': 'https://media.tenor.com/b_H_L2tE1xAAAAAC/bench-press.gif',
+        'Supino Inclinado': 'https://media.tenor.com/B9OdcqYJ91AAAAAC/incline-bench-press.gif',
+        'Crucifixo': 'LINK_AQUI',
+        'Desenvolvimento': 'https://media.tenor.com/U1y2f4vL1kAAAAAC/shoulder-press-dumbbell.gif',
+        'Elevação Lateral': 'https://media.tenor.com/C1k7g-f4eQ8AAAAC/lateral-raise.gif',
+        'Puxada Alta': 'https://media.tenor.com/QN8zX_g0VwMAAAAC/lat-pulldown.gif',
+        'Remada Curvada': 'https://media.tenor.com/xHq3uVjJq8AAAAAC/bent-over-row.gif',
+        'Remada Baixa': 'LINK_AQUI',
+        'Rosca Direta': 'https://media.tenor.com/M7rXzNQPjXAAAAAC/bicep-curl.gif',
+        'Rosca Martelo': 'LINK_AQUI',
+        'Tríceps Corda': 'https://media.tenor.com/4J1K_Y7v_HAAAAAC/tricep-pushdown.gif',
+        'Tríceps Testa': 'LINK_AQUI',
+        'Mergulho': 'https://media.tenor.com/F0N6W7xX8AAAAAAC/dips-exercise.gif',
+        
+        // --- GERAL ---
+        'Outro': 'https://media.tenor.com/P1tLkXgGq8AAAAAC/gym-workout.gif'
+    };
     
     const missedReasons = ['Academia fechada', 'Doente', 'Cansaço excessivo', 'Trabalho/Estudo', 'Perdi o horário', 'Outro'];
 
@@ -143,7 +179,19 @@
             if (state.showModal) renderCalendarModal(root);
             if (state.showRoutineModal) renderRoutineModal(root);
 
+            if (state.viewingImage) renderImageModal(root);
+
             lucide.createIcons();
+        },
+
+        // --- VISUALIZADOR DE IMAGEM ---
+        openImage: (url) => {
+            state.viewingImage = url;
+            app.render();
+        },
+        closeImage: () => {
+            state.viewingImage = null;
+            app.render();
         },
 
         setTab: (tab) => {
@@ -569,7 +617,7 @@
             // --- LISTA DE ROTINAS ---
             const listHtml = state.routines.map(r => `
                 <div class="group w-full rounded-2xl p-4 mb-3 bg-zinc-900 border border-zinc-800 hover:border-purple-900 transition-all relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-purple-700"></div>
+                    <div class="absolute top-0 left-0 w-1 h-full bg-purple-600"></div>
                     <div class="flex justify-between items-center">
                         <div onclick="app.openRoutineView(${r.id})" class="flex-1 cursor-pointer">
                             <h3 class="text-lg font-bold text-white">${r.name}</h3>
@@ -597,7 +645,7 @@
                 </div>
 
                 <div class="flex gap-3 mb-6">
-                    <button onclick="app.createRoutine()" class="flex-1 bg-purple-700 hover:bg-purple-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95">
+                    <button onclick="app.createRoutine()" class="flex-1 bg-purple-700 hover:bg-purple-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-purple-900/20 transition-all active:scale-95">
                         <i data-lucide="plus" class="w-5 h-5"></i> Criar Nova
                     </button>
                      <label class="px-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl flex items-center justify-center cursor-pointer border border-zinc-700 transition-all">
@@ -617,12 +665,11 @@
                 </div>
             `;
         } else if (state.viewingDay === null) {
-            // --- DETALHE DA ROTINA (SELEÇÃO DE DIA - VISUAL LISTA BONITA) ---
+            // --- DETALHE DA ROTINA (SELEÇÃO DE DIA) ---
             const r = activeRoutine;
             const daysList = weekdays.map((day, idx) => {
                 const len = r.days[idx].length;
                 const type = getDayType(r.days[idx]);
-                // Layout bonito em lista
                 return `
                     <button onclick="app.openDayView(${idx})" class="w-full flex items-center justify-between p-4 mb-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-purple-700 hover:bg-zinc-800 transition-all group">
                         <div class="flex items-center gap-4">
@@ -655,7 +702,7 @@
                 </div>
             `;
         } else {
-            // --- VISUALIZAÇÃO DOS EXERCÍCIOS DO DIA ---
+            // --- VISUALIZAÇÃO DOS EXERCÍCIOS DO DIA (COM GIFS) ---
             const r = activeRoutine;
             const d = state.viewingDay;
             const exercises = r.days[d];
@@ -666,27 +713,42 @@
                         <p>Nenhum exercício neste dia</p>
                         <button onclick="app.editRoutine(${r.id})" class="text-purple-400 mt-4 text-sm hover:underline">Adicionar Exercícios</button>
                    </div>` 
-                : exercises.map((ex, i) => `
-                    <div class="flex gap-4 p-4 rounded-2xl mb-3 bg-zinc-900 border border-zinc-800 items-center">
-                        <div class="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center flex-shrink-0 text-purple-500 font-bold">
-                            ${i+1}
-                        </div>
+                : exercises.map((ex, i) => {
+                    // --- AQUI ESTÁ A MÁGICA ---
+                    // Verifica se existe GIF. Se não, tenta remover o " 45°" pra ver se acha.
+                    // Adicionei um console.log para você debugar se precisar
+                    const gifUrl = exerciseGifs[ex.name] || exerciseGifs[ex.name.replace(' 45°', '')] || exerciseGifs[ex.customName];
+                    
+                    if (!gifUrl) console.log(`Gif não encontrado para: "${ex.name}"`);
+
+                    // 2. Se achar, cria a imagem com CLIQUE. Se não, cria o número.
+                    const mediaHtml = gifUrl 
+                        ? `<img 
+                            src="${gifUrl}" 
+                            onclick="app.openImage('${gifUrl}')" 
+                            class="w-16 h-16 rounded-xl object-cover border border-zinc-700 flex-shrink-0 bg-black cursor-zoom-in hover:opacity-80 transition-opacity"
+                           >`
+                        : `<div class="w-16 h-16 rounded-xl bg-zinc-800 flex items-center justify-center flex-shrink-0 text-purple-500 font-bold border border-zinc-700 text-lg">${i+1}</div>`;
+
+                    return `
+                    <div class="flex gap-4 p-3 rounded-2xl mb-3 bg-zinc-900 border border-zinc-800 items-center">
+                        ${mediaHtml}
                         <div class="flex-1">
-                            <h3 class="text-white font-bold text-base leading-tight mb-1">${ex.name === 'Outro' ? ex.customName : ex.name}</h3>
+                            <h3 class="text-white font-bold text-lg leading-tight mb-1.5">${ex.name === 'Outro' ? ex.customName : ex.name}</h3>
                             <div class="flex flex-wrap gap-2 text-xs text-zinc-400">
-                                <span class="bg-zinc-800 px-2 py-0.5 rounded text-zinc-300">${ex.sets} Séries</span>
-                                <span class="bg-zinc-800 px-2 py-0.5 rounded text-zinc-300">${ex.reps} Reps</span>
-                                ${ex.weight ? `<span class="bg-zinc-800 px-2 py-0.5 rounded text-yellow-500/80 font-mono">${ex.weight}kg</span>` : ''}
+                                <span class="bg-zinc-800 px-2.5 py-1 rounded-md text-zinc-300 font-medium border border-zinc-700">${ex.sets} Séries</span>
+                                <span class="bg-zinc-800 px-2.5 py-1 rounded-md text-zinc-300 font-medium border border-zinc-700">${ex.reps} Reps</span>
+                                ${ex.weight ? `<span class="bg-zinc-800 px-2.5 py-1 rounded-md text-yellow-500/90 font-mono font-bold border border-zinc-700">${ex.weight}kg</span>` : ''}
                             </div>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
 
             root.innerHTML = `
-                <div class="flex items-center gap-3 mb-4 pt-2">
-                    <button onclick="app.closeDayView()" class="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700"><i data-lucide="arrow-left" class="text-white w-5 h-5"></i></button>
+                <div class="flex items-center gap-3 mb-6 pt-2">
+                    <button onclick="app.closeDayView()" class="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700"><i data-lucide="arrow-left" class="text-white w-5 h-5"></i></button>
                     <div class="flex-1">
-                        <h1 class="text-xl font-bold text-white">${weekdays[d]}</h1>
+                        <h1 class="text-xl font-bold text-white capitalize">${weekdays[d]}</h1>
                         <p class="text-xs text-purple-400 font-semibold uppercase tracking-wider">${getDayType(exercises)}</p>
                     </div>
                 </div>
@@ -934,6 +996,31 @@
                     <button onclick="state.showRoutineModal = false; state.selectedWeekday = null; app.render()" class="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700"><i data-lucide="x" class="w-5 h-5 text-white"></i></button>
                 </div>
                 <div class="p-5 overflow-y-auto custom-scrollbar">${content}</div>
+            </div>
+        `;
+        root.appendChild(modal);
+    }
+
+    // --- MODAL DE VISUALIZAÇÃO DE GIF (LIGHTBOX) ---
+    function renderImageModal(root) {
+        const modal = document.createElement('div');
+        // Z-index 60 para ficar na frente de tudo. Fundo preto quase opaco.
+        modal.className = 'fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm';
+        
+        // Clicar fora fecha o modal
+        modal.onclick = (e) => {
+            if (e.target === modal) app.closeImage();
+        };
+
+        modal.innerHTML = `
+            <div class="relative w-full max-w-lg animate-in fade-in zoom-in duration-200">
+                <button onclick="app.closeImage()" class="absolute -top-12 right-0 p-2 bg-zinc-800 text-white rounded-full hover:bg-zinc-700 border border-zinc-700 transition-transform active:scale-95">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+
+                <img src="${state.viewingImage}" class="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-2xl border border-zinc-800 bg-zinc-900">
+                
+                <p class="text-center text-zinc-500 text-xs mt-4">Toque fora para fechar</p>
             </div>
         `;
         root.appendChild(modal);
