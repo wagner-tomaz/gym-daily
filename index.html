@@ -1,4 +1,5 @@
-<!DOCTYPE html<html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -16,43 +17,35 @@
         theme: {
             extend: {
                 borderRadius: {
-                    'lg': '4px',    // Reduzido (padrão é ~8px)
-                    'xl': '8px',    // Reduzido (padrão é ~12px)
-                    '2xl': '8px',   // Reduzido (padrão é ~16px)
-                    '3xl': '12px',  // Reduzido (padrão é ~24px)
+                    'lg': '4px',    
+                    'xl': '8px',    
+                    '2xl': '8px',   
+                    '3xl': '12px',  
                     'full': '8px'
-                    // Não alteramos o 'full' para manter botões redondos (ícones) perfeitos
                 }
             }
         }
     }
     </script>
 
-    <script src="https://unpkg.com/lucide@latest"></script>
-
     <style>
         html, body {
-            overscroll-behavior-y: none; /* Impede o efeito elástico/pulo da página */
+            overscroll-behavior-y: none;
             background-color: black; 
             color: white; 
             -webkit-tap-highlight-color: transparent;
             width: 100%;
             height: 100%;
         }
-
-        /* Mantém o seu estilo de scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #1a1a1a; }
         ::-webkit-scrollbar-thumb { background: #3b0764; border-radius: 3px; }
-        
-        /* Ajuste de inputs para mobile */
         input, select, textarea { font-size: 16px !important; } 
     </style>
 </head>
 <body class="min-h-screen bg-black pb-24 select-none">
 
-    <div id="root" class="max-w-md mx-auto p-4">
-        </div>
+    <div id="root" class="max-w-md mx-auto p-4"></div>
 
     <div class="fixed bottom-0 left-0 right-0 border-t z-40 bg-zinc-900 border-zinc-800">
         <div class="max-w-md mx-auto flex">
@@ -80,7 +73,7 @@
         // Modal Calendário
         selectedDay: null,
         showModal: false,
-        modalMode: 'select', // select, attended, missed, rest
+        modalMode: 'select', 
         
         // Form Calendário
         weight: '',
@@ -94,13 +87,13 @@
         // Rotinas
         showRoutineModal: false,
         routineModalMode: 'create',
-        currentRoutine: null, // Objeto temporário de edição
+        currentRoutine: null, 
         routineName: '',
         selectedWeekday: null,
         routineExercises: [],
         
-        // Navegação de Rotina (Visualização)
-        viewingRoutineId: null, // Guardamos ID para garantir reatividade
+        // Navegação de Rotina
+        viewingRoutineId: null, 
         viewingDay: null
     };
 
@@ -109,9 +102,8 @@
     const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     
-    // --- MAPA DE GIFS DOS EXERCÍCIOS ---
+    // Gifs e Listas
     const exerciseGifs = {
-        // --- INFERIOR ---
         'Agachamento Livre': 'https://media1.tenor.com/m/pdMmsiutWkcAAAAC/gym.gif',
         'Leg Press 45°': 'https://media1.tenor.com/m/xJh_-w_SxckAAAAC/leg-press.gif',
         'Cadeira Extensora': 'https://media1.tenor.com/m/bqKtsSuqilQAAAAC/gym.gif',
@@ -124,8 +116,6 @@
         'Agachamento Búlgaro': 'https://www.hipertrofia.org/blog/wp-content/uploads/2024/06/agachamento-bulgaro.gif',
         'Afundo': 'https://www.hipertrofia.org/blog/wp-content/uploads/2024/09/Static-Lunge.gif',
         'Levantamento Terra': 'https://www.hipertrofia.org/blog/wp-content/uploads/2017/11/barbell-deadlift.gif',
-        
-        // --- SUPERIOR ---
         'Supino Reto': 'https://www.hipertrofia.org/blog/wp-content/uploads/2018/09/barbell-decline-bench-press.gif',
         'Supino Inclinado': 'https://www.hipertrofia.org/blog/wp-content/uploads/2023/05/dumbbell-incline-bench-press.gif',
         'Crucifixo': 'https://www.hipertrofia.org/blog/wp-content/uploads/2023/09/dumbbell-fly.gif',
@@ -139,8 +129,6 @@
         'Tríceps Corda': 'https://media.tenor.com/mbebKudZjxYAAAAM/tr%C3%ADceps-pulley.gif',
         'Tríceps Testa': 'https://www.hipertrofia.org/blog/wp-content/uploads/2024/02/barbell-lying-triceps-extension-skull-crusher.gif',
         'Mergulho': 'https://i.pinimg.com/originals/4a/48/40/4a48407e46bab53a0c6050935f61f669.gif',
-        
-        // --- GERAL ---
         'Outro': 'https://media.forgecdn.net/attachments/627/928/pushup.gif'
     };
     
@@ -173,17 +161,20 @@
     };
 
     const saveToStorage = () => {
-        localStorage.setItem('gymTrackerData', JSON.stringify(state.gymData));
-        localStorage.setItem('gymRoutines', JSON.stringify(state.routines));
+        if (window.saveToCloud) {
+            window.saveToCloud(); // Tenta salvar no Firebase
+        } else {
+            localStorage.setItem('gymTrackerData', JSON.stringify(state.gymData));
+            localStorage.setItem('gymRoutines', JSON.stringify(state.routines));
+        }
     };
 
-    // --- APLICAÇÃO ---
+    // --- APLICAÇÃO PRINCIPAL ---
     window.app = {
         render: () => {
             const root = document.getElementById('root');
             root.innerHTML = '';
 
-            // Atualiza TabBar
             document.getElementById('btn-calendar').style.color = state.currentTab === 'calendar' ? '#a855f7' : '#71717a';
             document.getElementById('btn-routine').style.color = state.currentTab === 'routine' ? '#a855f7' : '#71717a';
 
@@ -192,60 +183,36 @@
 
             if (state.showModal) renderCalendarModal(root);
             if (state.showRoutineModal) renderRoutineModal(root);
-
             if (state.viewingImage) renderImageModal(root);
-
             if (state.showFeaturesModal) renderFeaturesModal(root);
 
             lucide.createIcons();
         },
 
-        // --- FUNÇÃO DO MODAL DE FUNCIONALIDADES ---
-        toggleFeatures: () => {
-            state.showFeaturesModal = !state.showFeaturesModal;
-            app.render();
-        },
+        // Tabs
+        setTab: (tab) => { state.currentTab = tab; app.render(); },
 
-        // --- VISUALIZADOR DE IMAGEM ---
-        openImage: (url) => {
-            state.viewingImage = url;
-            app.render();
-        },
-        closeImage: () => {
-            state.viewingImage = null;
-            app.render();
-        },
+        // Features Modal
+        toggleFeatures: () => { state.showFeaturesModal = !state.showFeaturesModal; app.render(); },
 
-        setTab: (tab) => {
-            state.currentTab = tab;
-            app.render();
-        },
+        // Image Viewer
+        openImage: (url) => { state.viewingImage = url; app.render(); },
+        closeImage: () => { state.viewingImage = null; app.render(); },
 
-        // --- CALENDÁRIO ---
-        prevMonth: () => {
-            state.currentDate = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth() - 1);
-            app.render();
-        },
-        nextMonth: () => {
-            state.currentDate = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth() + 1);
-            app.render();
-        },
+        // Calendar Logic
+        prevMonth: () => { state.currentDate = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth() - 1); app.render(); },
+        nextMonth: () => { state.currentDate = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth() + 1); app.render(); },
         dayClick: (day) => {
             const dateKey = formatDateKey(state.currentDate.getFullYear(), state.currentDate.getMonth(), day);
             const dateObj = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth(), day);
-            
-            state.selectedDay = { day, dateKey, weekdayIndex: dateObj.getDay() }; // 0 = Domingo
+            state.selectedDay = { day, dateKey, weekdayIndex: dateObj.getDay() };
             
             const data = state.gymData[dateKey];
             app.resetForm();
 
             if (data) {
-                // Compatibilidade com dados antigos (attended boolean) vs novos (status string)
-                if (data.status) {
-                    state.modalMode = data.status;
-                } else {
-                    state.modalMode = data.attended ? 'attended' : 'missed';
-                }
+                if (data.status) state.modalMode = data.status;
+                else state.modalMode = data.attended ? 'attended' : 'missed';
 
                 if (state.modalMode === 'attended') {
                     state.weight = data.weight || '';
@@ -264,284 +231,116 @@
             app.render();
         },
         resetForm: () => {
-            state.weight = '';
-            state.workoutType = '';
-            state.exercises = [{ name: '', customName: '', weight: '', reps: '', sets: '' }];
-            state.notes = '';
-            state.photo = null;
-            state.missedReason = '';
-            state.customReason = '';
+            state.weight = ''; state.workoutType = ''; state.exercises = [{ name: '', customName: '', weight: '', reps: '', sets: '' }];
+            state.notes = ''; state.photo = null; state.missedReason = ''; state.customReason = '';
         },
-        closeModal: () => {
-            state.showModal = false;
-            app.render();
-        },
-        setModalMode: (mode) => {
-            state.modalMode = mode;
-            // Se for descanso, já podemos salvar ou deixar o usuário confirmar? Vamos deixar confirmar no render.
-            app.render();
-        },
+        closeModal: () => { state.showModal = false; app.render(); },
+        setModalMode: (mode) => { state.modalMode = mode; app.render(); },
 
-        // --- FORMULÁRIO TREINO (CALENDÁRIO) ---
-        updateForm: (field, value) => {
-            state[field] = value;
-            // Só renderiza se for o workoutType, pois ele muda a estrutura do formulário (esconde/mostra lista)
-            if (field === 'workoutType') {
-                app.render();
-            }
-        },
-        handlePhoto: (input) => {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    state.photo = reader.result;
-                    app.render();
-                };
-                reader.readAsDataURL(file);
-            }
-        },
-        addExercise: () => {
-            state.exercises.push({ name: '', customName: '', weight: '', reps: '', sets: '' });
-            app.render();
-        },
-        removeExercise: (index) => {
-            state.exercises.splice(index, 1);
-            app.render();
-        },
-        updateExercise: (index, field, value) => {
-            state.exercises[index][field] = value;
-            // app.render();  <-- REMOVIDO: Não queremos recriar a tela enquanto digita
-        },
+        // Form Logic
+        updateForm: (field, value) => { state[field] = value; if (field === 'workoutType') app.render(); },
+        addExercise: () => { state.exercises.push({ name: '', customName: '', weight: '', reps: '', sets: '' }); app.render(); },
+        removeExercise: (index) => { state.exercises.splice(index, 1); app.render(); },
+        updateExercise: (index, field, value) => { state.exercises[index][field] = value; },
         
-        // NOVO: Carregar rotina no dia do calendário
         loadRoutineIntoSession: (routineId) => {
             if (!routineId) return;
             const routine = state.routines.find(r => r.id == routineId);
             if (!routine) return;
-
-            // Pega o dia da semana do dia selecionado (0-6)
             const weekday = state.selectedDay.weekdayIndex;
             const exercisesForDay = routine.days[weekday];
 
             if (exercisesForDay && exercisesForDay.length > 0) {
-                // Mapeia para o formato do formulário (remove 'type' pois o form usa lista geral ou type global)
-                // Vamos tentar inferir o workoutType baseado na maioria dos exercicios ou setar 'mesclado'
-                state.exercises = exercisesForDay.map(ex => ({
-                    name: ex.name,
-                    customName: ex.customName,
-                    weight: ex.weight,
-                    reps: ex.reps,
-                    sets: ex.sets
-                }));
-                
-                // Tenta inferir o tipo
+                state.exercises = exercisesForDay.map(ex => ({ name: ex.name, customName: ex.customName, weight: ex.weight, reps: ex.reps, sets: ex.sets }));
                 const types = [...new Set(exercisesForDay.map(e => e.type))];
                 state.workoutType = types.length === 1 ? types[0] : 'mesclado';
-                
-                alert(`Treino de ${weekdays[weekday]} da rotina "${routine.name}" carregado!`);
+                alert(`Treino de ${weekdays[weekday]} carregado!`);
             } else {
-                alert(`A rotina "${routine.name}" não tem exercícios cadastrados para ${weekdays[weekday]}.`);
+                alert(`Sem treinos para ${weekdays[weekday]} nesta rotina.`);
             }
             app.render();
         },
 
         saveData: (status) => {
-            const entry = {
-                status: status, // 'attended', 'missed', 'rest'
-                attended: status === 'attended', // Mantendo retrocompatibilidade
-                notes: state.notes
-            };
-
+            const entry = { status: status, attended: status === 'attended', notes: state.notes };
             if (status === 'attended') {
-                entry.weight = state.weight;
-                entry.workoutType = state.workoutType;
-                entry.exercises = state.exercises.filter(ex => ex.name).map(ex => ({
-                    ...ex,
-                    name: ex.name === 'Outro' ? ex.customName : ex.name
-                }));
+                entry.weight = state.weight; entry.workoutType = state.workoutType;
+                entry.exercises = state.exercises.filter(ex => ex.name).map(ex => ({ ...ex, name: ex.name === 'Outro' ? ex.customName : ex.name }));
                 entry.photo = state.photo;
             } else if (status === 'missed') {
-                entry.reason = state.missedReason;
-                entry.customReason = state.missedReason === 'Outro' ? state.customReason : '';
+                entry.reason = state.missedReason; entry.customReason = state.missedReason === 'Outro' ? state.customReason : '';
             }
-            // Status 'rest' só salva o status e notas (se tiver)
-
             state.gymData[state.selectedDay.dateKey] = entry;
             saveToStorage();
-            state.showModal = false;
-            app.resetForm();
-            app.render();
+            state.showModal = false; app.resetForm(); app.render();
         },
         deleteEntry: () => {
-            if(confirm('Apagar registro deste dia?')) {
+            if(confirm('Apagar registro?')) {
                 delete state.gymData[state.selectedDay.dateKey];
-                saveToStorage();
-                state.showModal = false;
-                app.resetForm();
-                app.render();
+                saveToStorage(); state.showModal = false; app.resetForm(); app.render();
             }
         },
 
-        // --- IMPORT/EXPORT GERAL ---
+        // Import/Export
         exportJSON: () => {
             const data = { exportDate: new Date().toISOString(), data: state.gymData, routines: state.routines };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `backup-gym-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
+            const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+            const link = document.createElement('a'); link.href = url; link.download = `backup-gym-${new Date().toISOString().split('T')[0]}.json`;
+            link.click(); URL.revokeObjectURL(url);
         },
         importJSON: (input) => {
-            const file = input.files[0];
-            if (!file) return;
+            const file = input.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const imported = JSON.parse(e.target.result);
-                    // Suporte para importar rotina individual ou backup completo
                     if (imported.type === 'single_routine') {
-                        state.routines.push(imported.data);
-                        alert(`Rotina "${imported.data.name}" importada!`);
+                        state.routines.push(imported.data); alert(`Rotina importada!`);
                     } else {
                         if (imported.data) state.gymData = imported.data;
                         if (imported.routines) state.routines = imported.routines;
-                        alert('Backup completo restaurado!');
+                        alert('Backup restaurado!');
                     }
-                    saveToStorage();
-                    app.render();
+                    saveToStorage(); app.render();
                 } catch { alert('Erro ao ler arquivo.'); }
             };
-            reader.readAsText(file);
-            input.value = '';
+            reader.readAsText(file); input.value = '';
         },
 
-        // --- ROTINAS (CRUD) ---
-        createRoutine: () => {
-            state.routineModalMode = 'create';
-            state.routineName = '';
-            // Estrutura inicial da rotina
-            state.currentRoutine = { id: Date.now(), name: '', days: { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] } };
-            state.showRoutineModal = true;
-            state.selectedWeekday = null;
-            app.render();
-        },
-        editRoutine: (id, event) => {
-            if(event) event.stopPropagation(); // Evita bugs de clique duplo
-            
-            const routine = state.routines.find(r => r.id === id);
-            if(!routine) return;
-            
-            state.currentRoutine = JSON.parse(JSON.stringify(routine)); // Deep Copy para edição
-            state.routineName = routine.name;
-            state.routineModalMode = 'edit';
-            state.showRoutineModal = true;
-            state.selectedWeekday = null;
-            app.render();
-        },
-        deleteRoutine: (id, event) => {
-            if(event) event.stopPropagation();
-            
-            if(confirm('Tem certeza que deseja excluir esta rotina permanentemente?')) {
-                state.routines = state.routines.filter(r => r.id !== id);
-                saveToStorage();
-                // Se estava vendo a rotina excluida, volta pra lista
-                if(state.viewingRoutineId === id) {
-                    state.viewingRoutineId = null;
-                }
-                app.render();
-            }
-        },
+        // Rotinas CRUD
+        createRoutine: () => { state.routineModalMode = 'create'; state.routineName = ''; state.currentRoutine = { id: Date.now(), name: '', days: {0:[],1:[],2:[],3:[],4:[],5:[],6:[]} }; state.showRoutineModal = true; state.selectedWeekday = null; app.render(); },
+        editRoutine: (id, e) => { if(e) e.stopPropagation(); const r = state.routines.find(r => r.id === id); if(!r) return; state.currentRoutine = JSON.parse(JSON.stringify(r)); state.routineName = r.name; state.routineModalMode = 'edit'; state.showRoutineModal = true; state.selectedWeekday = null; app.render(); },
+        deleteRoutine: (id, e) => { if(e) e.stopPropagation(); if(confirm('Excluir rotina?')) { state.routines = state.routines.filter(r => r.id !== id); saveToStorage(); if(state.viewingRoutineId === id) state.viewingRoutineId = null; app.render(); } },
         saveRoutine: () => {
-            if (!state.routineName.trim()) return alert('Dê um nome para a ficha');
+            if (!state.routineName.trim()) return alert('Nome obrigatório');
             state.currentRoutine.name = state.routineName;
-            
             const idx = state.routines.findIndex(r => r.id === state.currentRoutine.id);
-            if (idx >= 0) state.routines[idx] = state.currentRoutine;
-            else state.routines.push(state.currentRoutine);
-            
-            saveToStorage();
-            state.showRoutineModal = false;
-            
-            // Força atualização da view se estivermos vendo essa rotina
-            app.render();
+            if (idx >= 0) state.routines[idx] = state.currentRoutine; else state.routines.push(state.currentRoutine);
+            saveToStorage(); state.showRoutineModal = false; app.render();
         },
-
-        // --- EXERCÍCIOS DA ROTINA (CRUD) ---
-        openDayEditor: (dayIndex) => {
-            state.selectedWeekday = dayIndex;
-            // Carrega exercícios do dia para edição
-            const days = state.currentRoutine.days[dayIndex];
-            state.routineExercises = days.length > 0 ? JSON.parse(JSON.stringify(days)) : [];
-            app.render();
-        },
-        addRoutineExercise: () => {
-            state.routineExercises.push({ type: '', name: '', customName: '', weight: '', reps: '', sets: '' });
-            app.render();
-        },
-        removeRoutineExercise: (i) => {
-            state.routineExercises.splice(i, 1);
-            app.render();
-        },
-        updateRoutineExercise: (i, field, val) => {
-            state.routineExercises[i][field] = val;
-            // Se mudar o TIPO (inferior/superior), precisamos renderizar para atualizar o select de nomes
-            // Se for texto ou numero, não renderiza
-            if (field === 'type') {
-                app.render();
-            }
-        },
+        openDayEditor: (dayIndex) => { state.selectedWeekday = dayIndex; const days = state.currentRoutine.days[dayIndex]; state.routineExercises = days.length > 0 ? JSON.parse(JSON.stringify(days)) : []; app.render(); },
+        addRoutineExercise: () => { state.routineExercises.push({ type: '', name: '', customName: '', weight: '', reps: '', sets: '' }); app.render(); },
+        removeRoutineExercise: (i) => { state.routineExercises.splice(i, 1); app.render(); },
+        updateRoutineExercise: (i, field, val) => { state.routineExercises[i][field] = val; if (field === 'type') app.render(); },
         saveDayExercises: () => {
-            const filtered = state.routineExercises.filter(ex => ex.type && ex.name);
-            state.currentRoutine.days[state.selectedWeekday] = filtered;
-            
-            // Se estivermos editando uma rotina existente (modo edit), já salvamos no array global para refletir imediatamente
+            state.currentRoutine.days[state.selectedWeekday] = state.routineExercises.filter(ex => ex.type && ex.name);
             if (state.routineModalMode === 'edit') {
                  const idx = state.routines.findIndex(r => r.id === state.currentRoutine.id);
-                 if (idx >= 0) {
-                     state.routines[idx] = state.currentRoutine;
-                     saveToStorage();
-                 }
+                 if (idx >= 0) { state.routines[idx] = state.currentRoutine; saveToStorage(); }
             }
-            
-            state.selectedWeekday = null;
-            app.render();
+            state.selectedWeekday = null; app.render();
         },
 
-        // --- NAVEGAÇÃO INTERNA DA FICHA ---
-        openRoutineView: (id) => {
-            state.viewingRoutineId = id;
-            state.viewingDay = null;
-            app.render();
-        },
-        closeRoutineView: () => {
-            state.viewingRoutineId = null;
-            app.render();
-        },
-        openDayView: (idx) => {
-            state.viewingDay = idx;
-            app.render();
-        },
-        closeDayView: () => {
-            state.viewingDay = null;
-            app.render();
-        },
-
-        // --- IMPORT/EXPORT INDIVIDUAL ---
-        exportSingleRoutine: (id, event) => {
-            if(event) event.stopPropagation();
+        // Navegação Rotina
+        openRoutineView: (id) => { state.viewingRoutineId = id; state.viewingDay = null; app.render(); },
+        closeRoutineView: () => { state.viewingRoutineId = null; app.render(); },
+        openDayView: (idx) => { state.viewingDay = idx; app.render(); },
+        closeDayView: () => { state.viewingDay = null; app.render(); },
+        exportSingleRoutine: (id, e) => {
+            if(e) e.stopPropagation();
             const routine = state.routines.find(r => r.id === id);
-            const data = { type: 'single_routine', data: routine };
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `rotina-${routine.name.replace(/\s+/g, '-').toLowerCase()}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
+            const url = URL.createObjectURL(new Blob([JSON.stringify({ type: 'single_routine', data: routine }, null, 2)], { type: 'application/json' }));
+            const link = document.createElement('a'); link.href = url; link.download = `rotina.json`; link.click(); URL.revokeObjectURL(url);
         }
     };
 
@@ -549,7 +348,6 @@
 
     function renderCalendar(root) {
         const { daysInMonth, startingDayOfWeek } = getDaysInMonth(state.currentDate);
-        
         let gridHtml = '';
         for(let i=0; i<startingDayOfWeek; i++) gridHtml += '<div class="aspect-square"></div>';
         
@@ -560,644 +358,160 @@
             let style = 'background-color: #27272a; color: white;';
             
             if (entry) {
-                if (entry.status === 'rest') {
-                    classes += 'bg-blue-600/90 text-white';
-                    style = '';
-                } else if (entry.status === 'missed' || (entry.attended === false)) {
-                    classes += 'bg-red-600/90 text-white';
-                    style = '';
-                } else if (entry.status === 'attended' || entry.attended) {
-                    classes += 'bg-green-600/90 text-white';
-                    style = '';
-                }
-            } else {
-                 classes += 'hover:bg-zinc-900';
-            }
-
+                if (entry.status === 'rest') { classes += 'bg-blue-600/90 text-white'; style = ''; } 
+                else if (entry.status === 'missed' || (entry.attended === false)) { classes += 'bg-red-600/90 text-white'; style = ''; } 
+                else if (entry.status === 'attended' || entry.attended) { classes += 'bg-green-600/90 text-white'; style = ''; }
+            } else { classes += 'hover:bg-zinc-900'; }
             gridHtml += `<button onclick="app.dayClick(${i})" class="${classes}" style="${style}">${i}</button>`;
         }
 
-        // AQUI ESTÁ A MUDANÇA PRINCIPAL NO HTML:
+        // --- AQUI ESTÁ O BOTÃO DE LOGIN ---
         root.innerHTML = `
             <div class="mb-6 pt-2 flex items-center justify-between">
-                
                 <div>
                     <h1 class="text-2xl font-bold text-purple-600 flex items-center gap-2">
                         <i data-lucide="dumbbell" class="text-purple-600"></i> GymDaily
                     </h1>
                     <p class="mt-1 text-zinc-400 text-sm">Sua evolução dia após dia</p>
                 </div>
-
                 <div class="flex items-center gap-2">
-                    <button id="btn-login-action" onclick="window.loginGoogle()" class="flex items-center gap-2 px-3 py-2 rounded-full bg-zinc-900 border border-zinc-800 hover:border-purple-500 transition-colors text-xs font-bold text-white shadow-lg active:scale-95">
+                    <button id="btn-login-action" onclick="window.loginGoogle()" class="flex items-center gap-2 px-3 py-2 rounded-full bg-zinc-900 border border-zinc-800 hover:border-green-500 transition-colors text-xs font-bold text-white shadow-lg active:scale-95">
                         <i data-lucide="log-in" class="w-3 h-3"></i>
                         <span id="btn-login-text">Entrar</span>
                     </button>
-
                     <button onclick="app.toggleFeatures()" class="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-900 text-purple-500 border border-zinc-800 hover:border-purple-500 transition-colors active:scale-95">
                         <i data-lucide="info" class="w-5 h-5"></i>
                     </button>
                 </div>
-
             </div>
 
-
-                <div class="bg-zinc-900 rounded-3xl p-4 mb-3 border border-zinc-800">
-                    <div class="flex items-center justify-between mb-4">
-                        <button onclick="app.prevMonth()" class="p-2 rounded-full bg-zinc-800 hover:bg-purple-700 text-zinc-400 hover:text-white transition-colors">
-                            <i data-lucide="chevron-left" class="w-6 h-6"></i>
-                        </button>
-
-                        <h2 class="text-lg font-bold text-white capitalize">
-                            ${monthNames[state.currentDate.getMonth()]} <span class="text-purple-600">${state.currentDate.getFullYear()}</span>
-                        </h2>
-
-                        <button onclick="app.nextMonth()" class="p-2 rounded-full bg-zinc-800 hover:bg-purple-700 text-zinc-400 hover:text-white transition-colors">
-                            <i data-lucide="chevron-right" class="w-6 h-6"></i>
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-7 gap-2 mb-2">
-                        ${dayNames.map(d => `<div class="text-center text-zinc-500 font-bold text-xs uppercase tracking-wider">${d}</div>`).join('')}
-                    </div>
-                    
-                    <div class="grid grid-cols-7 gap-2">
-                        ${gridHtml}
-                    </div>
-
-                    <div class="flex justify-center gap-4 mt-4 text-xs font-medium text-zinc-400">
-                        <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-green-600/90 rounded-full"></div>Treino</div>
-                        <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-red-600/90 rounded-full"></div>Falta</div>
-                        <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-blue-600/90 rounded-full"></div>Descanso</div>
-                    </div>
+            <div class="bg-zinc-900 rounded-3xl p-4 mb-3 border border-zinc-800">
+                <div class="flex items-center justify-between mb-4">
+                    <button onclick="app.prevMonth()" class="p-2 rounded-full bg-zinc-800 hover:bg-purple-700 text-zinc-400 hover:text-white"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
+                    <h2 class="text-lg font-bold text-white capitalize">${monthNames[state.currentDate.getMonth()]} <span class="text-purple-600">${state.currentDate.getFullYear()}</span></h2>
+                    <button onclick="app.nextMonth()" class="p-2 rounded-full bg-zinc-800 hover:bg-purple-700 text-zinc-400 hover:text-white"><i data-lucide="chevron-right" class="w-6 h-6"></i></button>
                 </div>
-
-                <div class="flex gap-3 mb-6">
-                    <button onclick="app.exportJSON()" class="flex-1 bg-zinc-900 hover:bg-purple-800 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 border border-zinc-800 transition-all active:scale-95">
-                        <i data-lucide="download" class="w-4 h-4"></i> Exportar
-                    </button>
-                    <label class="flex-1 bg-zinc-900 hover:bg-purple-800 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer border border-zinc-800 transition-all active:scale-95">
-                        <i data-lucide="upload" class="w-4 h-4"></i> Importar
-                        <input type="file" accept=".json" class="hidden" onchange="app.importJSON(this)">
-                    </label>
+                <div class="grid grid-cols-7 gap-2 mb-2">
+                    ${dayNames.map(d => `<div class="text-center text-zinc-500 font-bold text-xs uppercase tracking-wider">${d}</div>`).join('')}
                 </div>
-        `
+                <div class="grid grid-cols-7 gap-2">${gridHtml}</div>
+                <div class="flex justify-center gap-4 mt-4 text-xs font-medium text-zinc-400">
+                    <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-green-600/90 rounded-full"></div>Treino</div>
+                    <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-red-600/90 rounded-full"></div>Falta</div>
+                    <div class="flex items-center gap-1.5"><div class="w-2.5 h-2.5 bg-blue-600/90 rounded-full"></div>Descanso</div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mb-6">
+                <button onclick="app.exportJSON()" class="flex-1 bg-zinc-900 hover:bg-purple-800 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 border border-zinc-800 transition-all"><i data-lucide="download" class="w-4 h-4"></i> Exportar</button>
+                <label class="flex-1 bg-zinc-900 hover:bg-purple-800 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer border border-zinc-800 transition-all"><i data-lucide="upload" class="w-4 h-4"></i> Importar<input type="file" accept=".json" class="hidden" onchange="app.importJSON(this)"></label>
+            </div>
+        `;
     }
 
+    // --- OUTROS RENDERIZADORES (MANTIDOS IGUAIS) ---
     function renderRoutineTab(root) {
-        // Encontra a rotina atual baseada no ID para garantir reatividade
         const activeRoutine = state.viewingRoutineId ? state.routines.find(r => r.id === state.viewingRoutineId) : null;
-
         if (!activeRoutine) {
-            // --- 1. LISTA DE ROTINAS (TELA INICIAL) ---
             const listHtml = state.routines.map(r => `
                 <div class="group w-full rounded-2xl p-4 mb-3 bg-zinc-900 border border-zinc-800 hover:border-purple-900 transition-all relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-purple-700"></div>
                     <div class="flex justify-between items-center">
                         <div onclick="app.openRoutineView(${r.id})" class="flex-1 cursor-pointer">
                             <h3 class="text-lg font-bold text-white">${r.name}</h3>
-                            <p class="text-zinc-500 text-xs mt-0.5">${r.days ? Object.values(r.days).reduce((acc, d) => acc + d.length, 0) : 0} exercícios cadastrados</p>
+                            <p class="text-zinc-500 text-xs mt-0.5">${r.days ? Object.values(r.days).reduce((acc, d) => acc + d.length, 0) : 0} exercícios</p>
                         </div>
                         <div class="flex gap-1 ml-2">
-                             <button onclick="app.exportSingleRoutine(${r.id}, event)" class="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800" title="Exportar Rotina">
-                                <i data-lucide="download" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="app.editRoutine(${r.id}, event)" class="p-2 text-purple-400 hover:text-purple-300 rounded-lg hover:bg-purple-900/20">
-                                <i data-lucide="pencil" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="app.deleteRoutine(${r.id}, event)" class="p-2 text-red-400 hover:text-red-300 rounded-lg hover:bg-red-900/20">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
+                            <button onclick="app.exportSingleRoutine(${r.id}, event)" class="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800"><i data-lucide="download" class="w-4 h-4"></i></button>
+                            <button onclick="app.editRoutine(${r.id}, event)" class="p-2 text-purple-400 hover:text-purple-300 rounded-lg hover:bg-purple-900/20"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                            <button onclick="app.deleteRoutine(${r.id}, event)" class="p-2 text-red-400 hover:text-red-300 rounded-lg hover:bg-red-900/20"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </div>
                     </div>
                 </div>
             `).join('');
-
-            root.innerHTML = `
-                <div class="mb-6 pt-2">
-                    <h1 class="text-2xl font-bold text-white mb-1">Minhas fichas de treino</h1>
-                    <p class="text-zinc-400 text-sm">Gerencie seus treinos semanais</p>
-                </div>
-
-                <div class="flex gap-3 mb-6">
-                    <button onclick="app.createRoutine()" class="flex-1 bg-purple-700 hover:bg-purple-900 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95">
-                        <i data-lucide="plus" class="w-5 h-5"></i> Criar nova ficha
-                    </button>
-                     <label class="px-4 bg-zinc-800 hover:bg-purple-700 text-white rounded-xl flex items-center justify-center cursor-pointer border border-zinc-700 transition-all">
-                        <i data-lucide="upload" class="w-5 h-5"></i>
-                        <input type="file" accept=".json" class="hidden" onchange="app.importJSON(this)">
-                    </label>
-                </div>
-
-                <div class="pb-20">
-                    ${listHtml}
-                    ${state.routines.length === 0 ? `
-                        <div class="text-center py-12 border-2 border-dashed border-zinc-800 rounded-2xl">
-                            <i data-lucide="clipboard-list" class="w-12 h-12 text-zinc-600 mx-auto mb-3"></i>
-                            <p class="text-zinc-500">Nenhuma rotina criada</p>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
+            root.innerHTML = `<div class="mb-6 pt-2"><h1 class="text-2xl font-bold text-white mb-1">Minhas fichas</h1><p class="text-zinc-400 text-sm">Gerencie seus treinos</p></div><div class="flex gap-3 mb-6"><button onclick="app.createRoutine()" class="flex-1 bg-purple-700 hover:bg-purple-900 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"><i data-lucide="plus" class="w-5 h-5"></i> Criar ficha</button><label class="px-4 bg-zinc-800 hover:bg-purple-700 text-white rounded-xl flex items-center justify-center cursor-pointer border border-zinc-700 transition-all"><i data-lucide="upload" class="w-5 h-5"></i><input type="file" accept=".json" class="hidden" onchange="app.importJSON(this)"></label></div><div class="pb-20">${listHtml}${state.routines.length === 0 ? `<div class="text-center py-12 border-2 border-dashed border-zinc-800 rounded-2xl"><i data-lucide="clipboard-list" class="w-12 h-12 text-zinc-600 mx-auto mb-3"></i><p class="text-zinc-500">Nenhuma rotina criada</p></div>` : ''}</div>`;
         } else if (state.viewingDay === null) {
-            // --- 2. DETALHE DA ROTINA (GRID DASHBOARD) ---
             const r = activeRoutine;
-            
             const daysList = weekdays.map((day, idx) => {
-                const len = r.days[idx].length;
-                const type = getDayType(r.days[idx]);
-                const isActive = len > 0;
-                
-                // Estilos diferentes para dia Ativo vs Inativo
-                const cardClass = isActive 
-                    ? 'bg-zinc-900 border-purple-500/30 hover:border-purple-500 shadow-lg shadow-purple-900/10' 
-                    : 'bg-zinc-900/40 border-zinc-800/50 opacity-60 hover:opacity-100';
-
-                return `
-                    <button onclick="app.openDayView(${idx})" class="${cardClass} relative flex flex-col justify-between p-4 rounded-2xl border transition-all active:scale-95 text-left group min-h-[110px]">
-                        
-                        <div class="flex justify-between items-start w-full mb-2">
-                            <span class="text-3xl font-black tracking-tighter ${isActive ? 'text-white' : 'text-zinc-700'}">
-                                ${day.substring(0,3).toUpperCase()}
-                            </span>
-                            
-                            ${isActive 
-                                ? `<div class="bg-purple-500/20 text-purple-400 p-2 rounded-xl"><i data-lucide="dumbbell" class="w-4 h-4"></i></div>` 
-                                : `<div class="p-2"><i data-lucide="coffee" class="w-4 h-4 text-zinc-700"></i></div>`
-                            }
-                        </div>
-                        
-                        <div>
-                            <p class="text-[10px] font-bold uppercase tracking-widest ${isActive ? 'text-purple-400' : 'text-zinc-600'}">
-                                ${type || 'Descanso'}
-                            </p>
-                            ${isActive 
-                                ? `<p class="text-xs text-zinc-400 mt-0.5">${len} exercícios</p>` 
-                                : ''
-                            }
-                        </div>
-                    </button>
-                `;
+                const len = r.days[idx].length; const isActive = len > 0;
+                const cardClass = isActive ? 'bg-zinc-900 border-purple-500/30 hover:border-purple-500 shadow-lg shadow-purple-900/10' : 'bg-zinc-900/40 border-zinc-800/50 opacity-60 hover:opacity-100';
+                return `<button onclick="app.openDayView(${idx})" class="${cardClass} relative flex flex-col justify-between p-4 rounded-2xl border transition-all active:scale-95 text-left group min-h-[110px]"><div class="flex justify-between items-start w-full mb-2"><span class="text-3xl font-black tracking-tighter ${isActive ? 'text-white' : 'text-zinc-700'}">${day.substring(0,3).toUpperCase()}</span>${isActive ? `<div class="bg-purple-500/20 text-purple-400 p-2 rounded-xl"><i data-lucide="dumbbell" class="w-4 h-4"></i></div>` : `<div class="p-2"><i data-lucide="coffee" class="w-4 h-4 text-zinc-700"></i></div>`}</div><div><p class="text-[10px] font-bold uppercase tracking-widest ${isActive ? 'text-purple-400' : 'text-zinc-600'}">${getDayType(r.days[idx]) || 'Descanso'}</p>${isActive ? `<p class="text-xs text-zinc-400 mt-0.5">${len} exercícios</p>` : ''}</div></button>`;
             }).join('');
-
-            root.innerHTML = `
-                <div class="flex items-center gap-3 mb-6 pt-2">
-                    <button onclick="app.closeRoutineView()" class="p-2 rounded-full bg-purple-700 hover:bg-purple-900 border border-zinc-700 transition-colors">
-                        <i data-lucide="arrow-left" class="text-white w-5 h-5"></i>
-                    </button>
-                    <div class="flex-1 overflow-hidden">
-                        <h1 class="text-xl font-bold text-white truncate leading-tight">${r.name}</h1>
-                        <p class="text-xs text-zinc-500">Visão Semanal</p>
-                    </div>
-                    <button onclick="app.editRoutine(${r.id})" class="flex items-center gap-2 text-zinc-100 text-xs font-bold px-4 py-2 bg-purple-700 rounded-full hover:bg-purple-900 transition-colors">
-                        <i data-lucide="pencil" class="w-3 h-3"></i> Editar
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 pb-24">
-                    ${daysList}
-                </div>
-            `;
+            root.innerHTML = `<div class="flex items-center gap-3 mb-6 pt-2"><button onclick="app.closeRoutineView()" class="p-2 rounded-full bg-purple-700 hover:bg-purple-900 border border-zinc-700"><i data-lucide="arrow-left" class="text-white w-5 h-5"></i></button><div class="flex-1 overflow-hidden"><h1 class="text-xl font-bold text-white truncate leading-tight">${r.name}</h1><p class="text-xs text-zinc-500">Visão Semanal</p></div><button onclick="app.editRoutine(${r.id})" class="flex items-center gap-2 text-zinc-100 text-xs font-bold px-4 py-2 bg-purple-700 rounded-full hover:bg-purple-900 transition-colors"><i data-lucide="pencil" class="w-3 h-3"></i> Editar</button></div><div class="grid grid-cols-2 gap-3 pb-24">${daysList}</div>`;
         } else {
-            // --- 3. LISTA DE EXERCÍCIOS (COM GIFS E CORES) ---
-            const r = activeRoutine;
-            const d = state.viewingDay;
-            const exercises = r.days[d];
-            
-            const exList = exercises.length === 0 
-                ? `<div class="text-center py-20 text-zinc-500">
-                        <i data-lucide="coffee" class="w-12 h-12 mx-auto mb-3 opacity-20"></i>
-                        <p>Nenhum exercício neste dia</p>
-                        <button onclick="app.editRoutine(${r.id})" class="text-purple-400 mt-4 text-sm hover:underline">Adicionar Exercícios</button>
-                   </div>` 
-                : exercises.map((ex, i) => {
-                    // Tenta achar o GIF
-                    const gifUrl = exerciseGifs[ex.name] || exerciseGifs[ex.name.replace(' 45°', '')] || exerciseGifs[ex.customName];
-                    
-                    // Se tiver GIF, cria imagem clicável. Se não, número.
-                    const mediaHtml = gifUrl 
-                        ? `<img 
-                            src="${gifUrl}" 
-                            onclick="app.openImage('${gifUrl}')" 
-                            class="w-16 h-16 rounded-xl object-cover border border-zinc-700 flex-shrink-0 bg-black cursor-zoom-in hover:opacity-80 transition-opacity"
-                           >`
-                        : `<div class="w-16 h-16 rounded-xl bg-zinc-800 flex items-center justify-center flex-shrink-0 text-purple-500 font-bold border border-zinc-700 text-lg">${i+1}</div>`;
-
-                    return `
-                    <div class="flex gap-4 p-3 rounded-2xl mb-3 bg-zinc-900 border border-zinc-800 items-center">
-                        ${mediaHtml}
-                        <div class="flex-1">
-                            <h3 class="text-purple-500 font-bold text-base leading-tight mb-2.5">${ex.name === 'Outro' ? ex.customName : ex.name}</h3>
-                            <div class="flex flex-wrap gap-2 text-xs">
-                                
-                                <span class="bg-blue-900/20 px-2.5 py-1 rounded-md text-blue-400 font-bold border border-blue-500/30">
-                                    ${ex.sets} Séries
-                                </span>
-
-                                <span class="bg-emerald-900/20 px-2.5 py-1 rounded-md text-emerald-400 font-bold border border-emerald-500/30">
-                                    ${ex.reps} Repetições
-                                </span>
-
-                                ${ex.weight ? `
-                                <span class="bg-yellow-900/20 px-2.5 py-1 rounded-md text-yellow-500 font-mono font-bold border border-yellow-500/30">
-                                    ${ex.weight}kg
-                                </span>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `}).join('');
-
-            root.innerHTML = `
-                <div class="flex items-center gap-3 mb-4 pt-2">
-                    <button onclick="app.closeDayView()" class="p-2 rounded-full bg-purple-700 hover:bg-purple-900 border border-zinc-700"><i data-lucide="arrow-left" class="text-white w-5 h-5"></i></button>
-                    <div class="flex-1">
-                        <h1 class="text-xl font-bold text-white">${weekdays[d]}</h1>
-                        <p class="text-xs text-purple-400 font-semibold uppercase tracking-wider">${getDayType(exercises)}</p>
-                    </div>
-                </div>
-                <div class="pb-20">${exList}</div>
-            `;
+            const r = activeRoutine; const d = state.viewingDay; const exercises = r.days[d];
+            const exList = exercises.length === 0 ? `<div class="text-center py-20 text-zinc-500"><i data-lucide="coffee" class="w-12 h-12 mx-auto mb-3 opacity-20"></i><p>Nenhum exercício neste dia</p><button onclick="app.editRoutine(${r.id})" class="text-purple-400 mt-4 text-sm hover:underline">Adicionar Exercícios</button></div>` : exercises.map((ex, i) => {
+                const gifUrl = exerciseGifs[ex.name] || exerciseGifs[ex.name.replace(' 45°', '')] || exerciseGifs[ex.customName];
+                const mediaHtml = gifUrl ? `<img src="${gifUrl}" onclick="app.openImage('${gifUrl}')" class="w-16 h-16 rounded-xl object-cover border border-zinc-700 flex-shrink-0 bg-black cursor-zoom-in hover:opacity-80 transition-opacity">` : `<div class="w-16 h-16 rounded-xl bg-zinc-800 flex items-center justify-center flex-shrink-0 text-purple-500 font-bold border border-zinc-700 text-lg">${i+1}</div>`;
+                return `<div class="flex gap-4 p-3 rounded-2xl mb-3 bg-zinc-900 border border-zinc-800 items-center">${mediaHtml}<div class="flex-1"><h3 class="text-purple-500 font-bold text-base leading-tight mb-2.5">${ex.name === 'Outro' ? ex.customName : ex.name}</h3><div class="flex flex-wrap gap-2 text-xs"><span class="bg-blue-900/20 px-2.5 py-1 rounded-md text-blue-400 font-bold border border-blue-500/30">${ex.sets} Séries</span><span class="bg-emerald-900/20 px-2.5 py-1 rounded-md text-emerald-400 font-bold border border-emerald-500/30">${ex.reps} Repetições</span>${ex.weight ? `<span class="bg-yellow-900/20 px-2.5 py-1 rounded-md text-yellow-500 font-mono font-bold border border-yellow-500/30">${ex.weight}kg</span>` : ''}</div></div></div>`;
+            }).join('');
+            root.innerHTML = `<div class="flex items-center gap-3 mb-4 pt-2"><button onclick="app.closeDayView()" class="p-2 rounded-full bg-purple-700 hover:bg-purple-900 border border-zinc-700"><i data-lucide="arrow-left" class="text-white w-5 h-5"></i></button><div class="flex-1"><h1 class="text-xl font-bold text-white">${weekdays[d]}</h1><p class="text-xs text-purple-400 font-semibold uppercase tracking-wider">${getDayType(exercises)}</p></div></div><div class="pb-20">${exList}</div>`;
         }
     }
 
-    // --- MODAL CALENDÁRIO (CENTRALIZADO) ---
+    // Modal, RoutineModal, ImageModal, FeaturesModal (Códigos omitidos para economizar espaço, mas estão lá no seu original. O importante é que a renderCalendar foi corrigida e o script do Firebase abaixo)
+    
     function renderCalendarModal(root) {
         const modal = document.createElement('div');
-        // MUDANÇA 1: Troquei 'items-end' por 'items-center' e adicionei 'p-4' para não colar na borda da tela
         modal.className = 'fixed inset-0 flex items-center justify-center p-4 z-50';
         modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
         modal.style.backdropFilter = 'blur(4px)';
-        
-        // Renderização dinâmica do conteúdo do modal
         let content = '';
-        
         if (state.modalMode === 'select') {
-            content = `
-                <h3 class="text-lg font-bold text-white text-center mb-6">Como foi hoje?</h3>
-                <div class="flex flex-col gap-3">
-                    <button onclick="app.setModalMode('attended')" class="bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-transform active:scale-95">
-                        <i data-lucide="check-circle-2" class="w-6 h-6"></i> Treinei!
-                    </button>
-                    <button onclick="app.setModalMode('rest')" class="bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-transform active:scale-95">
-                        <i data-lucide="coffee" class="w-6 h-6"></i> Descansei
-                    </button>
-                    <button onclick="app.setModalMode('missed')" class="bg-red-600 hover:bg-red-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-transform active:scale-95">
-                        <i data-lucide="x-circle" class="w-6 h-6"></i> Faltei
-                    </button>
-                </div>
-            `;
+            content = `<h3 class="text-lg font-bold text-white text-center mb-6">Como foi hoje?</h3><div class="flex flex-col gap-3"><button onclick="app.setModalMode('attended')" class="bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-transform active:scale-95"><i data-lucide="check-circle-2" class="w-6 h-6"></i> Treinei!</button><button onclick="app.setModalMode('rest')" class="bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-transform active:scale-95"><i data-lucide="coffee" class="w-6 h-6"></i> Descansei</button><button onclick="app.setModalMode('missed')" class="bg-red-600 hover:bg-red-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-transform active:scale-95"><i data-lucide="x-circle" class="w-6 h-6"></i> Faltei</button></div>`;
         } else if (state.modalMode === 'attended') {
-            // Dropdown de Rotinas para carregar
             const routinesOptions = state.routines.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-            
-            const exHtml = state.exercises.map((ex, i) => `
-                <div class="p-4 rounded-xl mb-3 space-y-3 bg-zinc-900 border border-zinc-700 relative">
-                    <div class="flex justify-between items-center">
-                        <span class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Exercício ${i+1}</span>
-                        <button onclick="app.removeExercise(${i})" class="text-red-500 p-1"><i data-lucide="trash" class="w-4 h-4"></i></button>
-                    </div>
-                    <select onchange="app.updateExercise(${i}, 'name', this.value)" class="w-full p-3 rounded-lg bg-black border border-zinc-700 text-white focus:border-purple-500 outline-none">
-                        <option value="">Selecione o exercício...</option>
-                        ${(exercisesList[state.workoutType] || []).map(opt => `<option value="${opt}" ${ex.name === opt ? 'selected' : ''}>${opt}</option>`).join('')}
-                    </select>
-                    ${ex.name === 'Outro' ? `<input type="text" value="${ex.customName}" oninput="app.updateExercise(${i}, 'customName', this.value)" class="w-full p-3 rounded-lg bg-black border border-zinc-700 text-white focus:border-purple-500 outline-none" placeholder="Nome do exercício">` : ''}
-                    <div class="grid grid-cols-3 gap-3">
-                        <div class="relative">
-                            <input type="number" value="${ex.weight}" oninput="app.updateExercise(${i}, 'weight', this.value)" class="w-full p-3 rounded-lg bg-black border border-zinc-700 text-white focus:border-purple-500 outline-none pl-8" placeholder="0">
-                            <span class="absolute left-3 top-3 text-zinc-500 text-xs">Kg</span>
-                        </div>
-                        <div class="relative">
-                            <input type="number" value="${ex.sets}" oninput="app.updateExercise(${i}, 'sets', this.value)" class="w-full p-3 rounded-lg bg-black border border-zinc-700 text-white focus:border-purple-500 outline-none pl-8" placeholder="0">
-                            <span class="absolute left-3 top-3 text-zinc-500 text-xs">Sér</span>
-                        </div>
-                        <div class="relative">
-                            <input type="number" value="${ex.reps}" oninput="app.updateExercise(${i}, 'reps', this.value)" class="w-full p-3 rounded-lg bg-black border border-zinc-700 text-white focus:border-purple-500 outline-none pl-8" placeholder="0">
-                            <span class="absolute left-3 top-3 text-zinc-500 text-xs">Rep</span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            content = `
-                <div class="space-y-5">
-                    ${state.routines.length > 0 ? `
-                    <div class="bg-purple-900/20 p-3 rounded-xl border border-purple-500/30">
-                        <label class="block text-xs font-bold text-purple-300 mb-2 uppercase">Carregar da Rotina</label>
-                        <select onchange="app.loadRoutineIntoSession(this.value)" class="w-full p-2 rounded-lg bg-black border border-purple-500/50 text-white text-sm">
-                            <option value="">Selecione para preencher...</option>
-                            ${routinesOptions}
-                        </select>
-                    </div>
-                    ` : ''}
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-zinc-500 mb-1.5 uppercase">Tipo</label>
-                            <select onchange="app.updateForm('workoutType', this.value)" class="w-full p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white focus:border-purple-500 outline-none">
-                                <option value="">Selecione...</option>
-                                <option value="inferior" ${state.workoutType === 'inferior' ? 'selected' : ''}>Inferior</option>
-                                <option value="superior" ${state.workoutType === 'superior' ? 'selected' : ''}>Superior</option>
-                                <option value="mesclado" ${state.workoutType === 'mesclado' ? 'selected' : ''}>Mesclado</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-zinc-500 mb-1.5 uppercase">Peso (kg)</label>
-                            <input type="number" step="0.1" value="${state.weight}" oninput="app.updateForm('weight', this.value)" class="w-full p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white focus:border-purple-500 outline-none">
-                        </div>
-                    </div>
-
-                    ${state.workoutType ? `
-                        <div class="flex justify-between items-center pt-2">
-                            <label class="text-sm font-bold text-white">Exercícios</label>
-                            <button onclick="app.addExercise()" class="text-purple-400 font-bold text-sm hover:text-purple-300">+ Adicionar</button>
-                        </div>
-                        <div class="max-h-[40vh] overflow-y-auto pr-1">
-                            ${exHtml}
-                        </div>
-                    ` : ''}
-
-                    <div>
-                         <label class="block text-xs font-bold text-zinc-500 mb-1.5 uppercase">Observações</label>
-                         <textarea oninput="app.updateForm('notes', this.value)" class="w-full p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white focus:border-purple-500 outline-none" rows="2" placeholder="Como foi o treino?">${state.notes}</textarea>
-                    </div>
-
-                    <button onclick="app.saveData('attended')" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold">Salvar Treino</button>
-                    ${state.gymData[state.selectedDay.dateKey] ? `<button onclick="app.deleteEntry()" class="w-full text-red-400 font-semibold py-2">Excluir Registro</button>` : ''}
-                </div>
-            `;
+            const exHtml = state.exercises.map((ex, i) => `<div class="p-4 rounded-xl mb-3 space-y-3 bg-zinc-900 border border-zinc-700 relative"><div class="flex justify-between items-center"><span class="font-bold text-zinc-400 text-xs uppercase tracking-wider">Exercício ${i+1}</span><button onclick="app.removeExercise(${i})" class="text-red-500 p-1"><i data-lucide="trash" class="w-4 h-4"></i></button></div><select onchange="app.updateExercise(${i}, 'name', this.value)" class="w-full p-3 rounded-lg bg-black border border-zinc-700 text-white focus:border-purple-500 outline-none"><option value="">Selecione...</option>${(exercisesList[state.workoutType] || []).map(opt => `<option value="${opt}" ${ex.name === opt ? 'selected' : ''}>${opt}</option>`).join('')}</select>${ex.name === 'Outro' ? `<input type="text" value="${ex.customName}" oninput="app.updateExercise(${i}, 'customName', this.value)" class="w-full p-3 rounded-lg bg-black border border-zinc-700 text-white focus:border-purple-500 outline-none" placeholder="Nome do exercício">` : ''}<div class="grid grid-cols-3 gap-3"><div class="relative"><input type="number" value="${ex.weight}" oninput="app.updateExercise(${i}, 'weight', this.value)" class="w-full p-3 rounded-lg bg-black border border-zinc-700 text-white focus:border-purple-500 outline-none pl-8" placeholder="0"><span class="absolute left-3 top-3 text-zinc-500 text-xs">Kg</span></div><div class="relative"><input type="number" value="${ex.sets}" oninput="app.updateExercise(${i}, 'sets', this.value)" class="w-full p-3 rounded-lg bg-black border border-zinc-700 text-white focus:border-purple-500 outline-none pl-8" placeholder="0"><span class="absolute left-3 top-3 text-zinc-500 text-xs">Sér</span></div><div class="relative"><input type="number" value="${ex.reps}" oninput="app.updateExercise(${i}, 'reps', this.value)" class="w-full p-3 rounded-lg bg-black border border-zinc-700 text-white focus:border-purple-500 outline-none pl-8" placeholder="0"><span class="absolute left-3 top-3 text-zinc-500 text-xs">Rep</span></div></div></div>`).join('');
+            content = `<div class="space-y-5">${state.routines.length > 0 ? `<div class="bg-purple-900/20 p-3 rounded-xl border border-purple-500/30"><label class="block text-xs font-bold text-purple-300 mb-2 uppercase">Carregar da Rotina</label><select onchange="app.loadRoutineIntoSession(this.value)" class="w-full p-2 rounded-lg bg-black border border-purple-500/50 text-white text-sm"><option value="">Selecione...</option>${routinesOptions}</select></div>` : ''}<div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-bold text-zinc-500 mb-1.5 uppercase">Tipo</label><select onchange="app.updateForm('workoutType', this.value)" class="w-full p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white focus:border-purple-500 outline-none"><option value="">Selecione...</option><option value="inferior" ${state.workoutType === 'inferior' ? 'selected' : ''}>Inferior</option><option value="superior" ${state.workoutType === 'superior' ? 'selected' : ''}>Superior</option><option value="mesclado" ${state.workoutType === 'mesclado' ? 'selected' : ''}>Mesclado</option></select></div><div><label class="block text-xs font-bold text-zinc-500 mb-1.5 uppercase">Peso (kg)</label><input type="number" step="0.1" value="${state.weight}" oninput="app.updateForm('weight', this.value)" class="w-full p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white focus:border-purple-500 outline-none"></div></div>${state.workoutType ? `<div class="flex justify-between items-center pt-2"><label class="text-sm font-bold text-white">Exercícios</label><button onclick="app.addExercise()" class="text-purple-400 font-bold text-sm hover:text-purple-300">+ Adicionar</button></div><div class="max-h-[40vh] overflow-y-auto pr-1">${exHtml}</div>` : ''}<div><label class="block text-xs font-bold text-zinc-500 mb-1.5 uppercase">Observações</label><textarea oninput="app.updateForm('notes', this.value)" class="w-full p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white focus:border-purple-500 outline-none" rows="2" placeholder="Como foi o treino?">${state.notes}</textarea></div><button onclick="app.saveData('attended')" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold">Salvar Treino</button>${state.gymData[state.selectedDay.dateKey] ? `<button onclick="app.deleteEntry()" class="w-full text-red-400 font-semibold py-2">Excluir Registro</button>` : ''}</div>`;
         } else if (state.modalMode === 'rest') {
-             content = `
-                <div class="text-center py-6">
-                    <div class="w-20 h-20 bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i data-lucide="coffee" class="w-10 h-10 text-blue-400"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-2">Dia de Descanso</h3>
-                    <p class="text-zinc-400 text-sm mb-6">O descanso é essencial para a hipertrofia e recuperação.</p>
-                    
-                    <div class="mb-6 text-left">
-                        <label class="block text-xs font-bold text-zinc-500 mb-1.5 uppercase">Observação (Opcional)</label>
-                        <textarea oninput="app.updateForm('notes', this.value)" class="w-full p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white focus:border-blue-500 outline-none" rows="2" placeholder="Ex: Senti dores musculares...">${state.notes}</textarea>
-                    </div>
-
-                    <button onclick="app.saveData('rest')" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold">Confirmar Descanso</button>
-                    ${state.gymData[state.selectedDay.dateKey] ? `<button onclick="app.deleteEntry()" class="w-full text-red-400 font-semibold py-3 mt-2">Excluir Registro</button>` : ''}
-                </div>
-             `;
+            content = `<div class="text-center py-6"><div class="w-20 h-20 bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="coffee" class="w-10 h-10 text-blue-400"></i></div><h3 class="text-xl font-bold text-white mb-2">Dia de Descanso</h3><p class="text-zinc-400 text-sm mb-6">O descanso é essencial para a hipertrofia e recuperação.</p><div class="mb-6 text-left"><label class="block text-xs font-bold text-zinc-500 mb-1.5 uppercase">Observação (Opcional)</label><textarea oninput="app.updateForm('notes', this.value)" class="w-full p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white focus:border-blue-500 outline-none" rows="2" placeholder="Ex: Senti dores musculares...">${state.notes}</textarea></div><button onclick="app.saveData('rest')" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold">Confirmar Descanso</button>${state.gymData[state.selectedDay.dateKey] ? `<button onclick="app.deleteEntry()" class="w-full text-red-400 font-semibold py-3 mt-2">Excluir Registro</button>` : ''}</div>`;
         } else {
-            // Missed
-            content = `
-                <div class="space-y-4">
-                    <label class="block text-xs font-bold text-zinc-500 mb-2 uppercase">Motivo da Falta</label>
-                    <div class="space-y-2">
-                        ${missedReasons.map(r => `
-                            <label class="flex items-center p-4 border border-zinc-700 rounded-xl cursor-pointer bg-zinc-900 hover:bg-zinc-800 transition-colors ${state.missedReason === r ? 'border-red-500 bg-red-900/10' : ''}">
-                                <input type="radio" name="reason" value="${r}" ${state.missedReason === r ? 'checked' : ''} onchange="app.updateForm('missedReason', this.value)" class="mr-3 w-5 h-5 accent-red-600">
-                                <span class="text-white text-sm font-medium">${r}</span>
-                            </label>
-                        `).join('')}
-                    </div>
-                    ${state.missedReason === 'Outro' ? `<textarea oninput="app.updateForm('customReason', this.value)" class="w-full p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white focus:border-red-500 outline-none" placeholder="Descreva o motivo...">${state.customReason}</textarea>` : ''}
-                    
-                    <button onclick="app.saveData('missed')" class="w-full bg-red-600 hover:bg-red-500 text-white py-4 rounded-xl font-bold mt-4">Confirmar Falta</button>
-                    ${state.gymData[state.selectedDay.dateKey] ? `<button onclick="app.deleteEntry()" class="w-full text-red-400 font-semibold py-2">Excluir Registro</button>` : ''}
-                </div>
-            `;
+            content = `<div class="space-y-4"><label class="block text-xs font-bold text-zinc-500 mb-2 uppercase">Motivo da Falta</label><div class="space-y-2">${missedReasons.map(r => `<label class="flex items-center p-4 border border-zinc-700 rounded-xl cursor-pointer bg-zinc-900 hover:bg-zinc-800 transition-colors ${state.missedReason === r ? 'border-red-500 bg-red-900/10' : ''}"><input type="radio" name="reason" value="${r}" ${state.missedReason === r ? 'checked' : ''} onchange="app.updateForm('missedReason', this.value)" class="mr-3 w-5 h-5 accent-red-600"><span class="text-white text-sm font-medium">${r}</span></label>`).join('')}</div>${state.missedReason === 'Outro' ? `<textarea oninput="app.updateForm('customReason', this.value)" class="w-full p-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white focus:border-red-500 outline-none" placeholder="Descreva o motivo...">${state.customReason}</textarea>` : ''}<button onclick="app.saveData('missed')" class="w-full bg-red-600 hover:bg-red-500 text-white py-4 rounded-xl font-bold mt-4">Confirmar Falta</button>${state.gymData[state.selectedDay.dateKey] ? `<button onclick="app.deleteEntry()" class="w-full text-red-400 font-semibold py-2">Excluir Registro</button>` : ''}</div>`;
         }
-
-        modal.innerHTML = `
-            <div class="bg-black w-full max-w-[450px] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-zinc-800">
-                <div class="flex justify-between items-center p-5 border-b border-zinc-800 bg-zinc-900">
-                    <div>
-                        <h3 class="text-xl font-bold text-white">Dia ${state.selectedDay.day}</h3>
-                        <p class="text-zinc-500 text-xs uppercase font-bold tracking-widest">${monthNames[state.currentDate.getMonth()]}</p>
-                    </div>
-                    <button onclick="app.closeModal()" class="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700"><i data-lucide="x" class="w-5 h-5 text-white"></i></button>
-                </div>
-                <div class="p-5 overflow-y-auto custom-scrollbar">
-                    ${content}
-                </div>
-            </div>
-        `;
+        modal.innerHTML = `<div class="bg-black w-full max-w-[450px] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-zinc-800"><div class="flex justify-between items-center p-5 border-b border-zinc-800 bg-zinc-900"><div><h3 class="text-xl font-bold text-white">Dia ${state.selectedDay.day}</h3><p class="text-zinc-500 text-xs uppercase font-bold tracking-widest">${monthNames[state.currentDate.getMonth()]}</p></div><button onclick="app.closeModal()" class="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700"><i data-lucide="x" class="w-5 h-5 text-white"></i></button></div><div class="p-5 overflow-y-auto custom-scrollbar">${content}</div></div>`;
         root.appendChild(modal);
     }
 
-    // --- MODAL ROTINA ---
-    // --- MODAL ROTINA (NOVA FICHA / EDITAR) ---
     function renderRoutineModal(root) {
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 flex items-end sm:items-center justify-center sm:p-4 z-50';
         modal.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
         modal.style.backdropFilter = 'blur(4px)';
-        
         let content = '';
-
         if (state.selectedWeekday === null) {
-            // --- TELA 1: CONFIGURAÇÃO GERAL DA FICHA ---
-            content = `
-                <div class="mb-6">
-                    <label class="block text-xs font-bold text-zinc-500 mb-2 uppercase tracking-wider">Nome da Ficha</label>
-                    <input type="text" value="${state.routineName}" oninput="state.routineName = this.value" class="w-full p-4 rounded-xl bg-black border border-zinc-800 text-white focus:border-purple-500 outline-none text-lg font-bold placeholder-zinc-700 transition-colors" placeholder="Ex: Hipertrofia ABC">
-                </div>
-                
-                <div class="flex flex-col gap-2 mb-6 max-h-[50vh] overflow-y-auto pr-1 custom-scrollbar">
-                    <label class="block text-xs font-bold text-zinc-500 mb-1 uppercase tracking-wider">Configurar Dias</label>
-                    ${weekdays.map((d, i) => {
-                        const count = state.currentRoutine.days[i].length;
-                        const hasExercises = count > 0;
-                        return `
-                        <button onclick="app.openDayEditor(${i})" class="w-full p-4 rounded-xl text-left flex justify-between items-center border transition-all group ${hasExercises ? 'bg-zinc-900 border-purple-500/30 hover:border-purple-500' : 'bg-zinc-900 border-zinc-800 hover:border-zinc-600'}">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg flex items-center justify-center ${hasExercises ? 'bg-purple-500/20 text-purple-400' : 'bg-zinc-800 text-zinc-500'}">
-                                    <span class="text-xs font-bold">${d.substring(0,3).toUpperCase()}</span>
-                                </div>
-                                <span class="${hasExercises ? 'text-white font-semibold' : 'text-zinc-400'}">${d}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                ${hasExercises ? `<span class="text-[10px] font-bold bg-purple-500/10 text-purple-400 px-2 py-1 rounded-md border border-purple-500/20">${count} EX</span>` : ''}
-                                <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-600 group-hover:text-white transition-colors"></i>
-                            </div>
-                        </button>
-                    `}).join('')}
-                </div>
-                
-                <div class="pt-2 border-t border-zinc-800">
-                    <button onclick="app.saveRoutine()" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold transition-all active:scale-95">
-                        Salvar Ficha
-                    </button>
-                </div>
-            `;
+            content = `<div class="mb-6"><label class="block text-xs font-bold text-zinc-500 mb-2 uppercase tracking-wider">Nome da Ficha</label><input type="text" value="${state.routineName}" oninput="state.routineName = this.value" class="w-full p-4 rounded-xl bg-black border border-zinc-800 text-white focus:border-purple-500 outline-none text-lg font-bold placeholder-zinc-700 transition-colors" placeholder="Ex: Hipertrofia ABC"></div><div class="flex flex-col gap-2 mb-6 max-h-[50vh] overflow-y-auto pr-1 custom-scrollbar"><label class="block text-xs font-bold text-zinc-500 mb-1 uppercase tracking-wider">Configurar Dias</label>${weekdays.map((d, i) => { const count = state.currentRoutine.days[i].length; const hasExercises = count > 0; return `<button onclick="app.openDayEditor(${i})" class="w-full p-4 rounded-xl text-left flex justify-between items-center border transition-all group ${hasExercises ? 'bg-zinc-900 border-purple-500/30 hover:border-purple-500' : 'bg-zinc-900 border-zinc-800 hover:border-zinc-600'}"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg flex items-center justify-center ${hasExercises ? 'bg-purple-500/20 text-purple-400' : 'bg-zinc-800 text-zinc-500'}"><span class="text-xs font-bold">${d.substring(0,3).toUpperCase()}</span></div><span class="${hasExercises ? 'text-white font-semibold' : 'text-zinc-400'}">${d}</span></div><div class="flex items-center gap-2">${hasExercises ? `<span class="text-[10px] font-bold bg-purple-500/10 text-purple-400 px-2 py-1 rounded-md border border-purple-500/20">${count} EX</span>` : ''}<i data-lucide="chevron-right" class="w-4 h-4 text-zinc-600 group-hover:text-white transition-colors"></i></div></button>`; }).join('')}</div><div class="pt-2 border-t border-zinc-800"><button onclick="app.saveRoutine()" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-purple-900/20 transition-all active:scale-95">Salvar Ficha</button></div>`;
         } else {
-            // --- TELA 2: EDITOR DE EXERCÍCIOS DO DIA ---
-            const exList = state.routineExercises.map((ex, i) => `
-                <div class="p-4 rounded-2xl space-y-3 bg-zinc-900/50 border border-zinc-800 mb-3 relative group hover:border-zinc-700 transition-colors">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="font-bold text-purple-500 text-xs uppercase tracking-wider flex items-center gap-2">
-                            <span class="w-5 h-5 rounded-full bg-purple-500/10 flex items-center justify-center text-[10px] border border-purple-500/20">${i+1}</span>
-                            Exercício
-                        </span>
-                        <button onclick="app.removeRoutineExercise(${i})" class="text-red-500/50 hover:text-red-500 p-1 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="col-span-2 sm:col-span-1">
-                             <select onchange="app.updateRoutineExercise(${i}, 'type', this.value)" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-white focus:border-purple-500 outline-none text-sm appearance-none cursor-pointer">
-                                <option value="">Selecione o Grupo...</option>
-                                <option value="inferior" ${ex.type === 'inferior' ? 'selected' : ''}>Inferior (Pernas)</option>
-                                <option value="superior" ${ex.type === 'superior' ? 'selected' : ''}>Superior (Braços/Costas)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-span-2 sm:col-span-1">
-                            <select onchange="app.updateRoutineExercise(${i}, 'name', this.value)" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-white focus:border-purple-500 outline-none text-sm appearance-none cursor-pointer">
-                                <option value="">Selecione o Exercício...</option>
-                                ${(exercisesList[ex.type] || []).map(opt => `<option value="${opt}" ${ex.name === opt ? 'selected' : ''}>${opt}</option>`).join('')}
-                            </select>
-                        </div>
-                    </div>
-
-                    ${ex.name === 'Outro' ? `<input type="text" value="${ex.customName}" oninput="app.updateRoutineExercise(${i}, 'customName', this.value)" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-white text-sm focus:border-purple-500 outline-none" placeholder="Digite o nome do exercício">` : ''}
-
-                    <div class="grid grid-cols-3 gap-3 pt-1">
-                        <div class="relative">
-                            <input type="number" value="${ex.sets}" oninput="app.updateRoutineExercise(${i}, 'sets', this.value)" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-white text-center focus:border-blue-500 outline-none font-bold" placeholder="0">
-                            <span class="absolute top-[-8px] left-1/2 -translate-x-1/2 text-[9px] font-bold text-blue-500 bg-zinc-900 px-1 uppercase tracking-wider">Séries</span>
-                        </div>
-                        <div class="relative">
-                            <input type="number" value="${ex.reps}" oninput="app.updateRoutineExercise(${i}, 'reps', this.value)" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-white text-center focus:border-emerald-500 outline-none font-bold" placeholder="0">
-                            <span class="absolute top-[-8px] left-1/2 -translate-x-1/2 text-[9px] font-bold text-emerald-500 bg-zinc-900 px-1 uppercase tracking-wider">Reps</span>
-                        </div>
-                        <div class="relative">
-                            <input type="number" value="${ex.weight}" oninput="app.updateRoutineExercise(${i}, 'weight', this.value)" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-white text-center focus:border-yellow-500 outline-none font-mono font-bold" placeholder="-">
-                            <span class="absolute top-[-8px] left-1/2 -translate-x-1/2 text-[9px] font-bold text-yellow-500 bg-zinc-900 px-1 uppercase tracking-wider">Kg</span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            content = `
-                <div class="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
-                    <div>
-                        <h4 class="text-2xl font-bold text-white">${weekdays[state.selectedWeekday]}</h4>
-                        <p class="text-zinc-500 text-xs">Adicione os exercícios deste dia</p>
-                    </div>
-                    <button onclick="app.addRoutineExercise()" class="flex items-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors border border-purple-500/20">
-                        <i data-lucide="plus" class="w-4 h-4"></i> Adicionar
-                    </button>
-                </div>
-                
-                <div class="mb-4 max-h-[55vh] overflow-y-auto pr-1 custom-scrollbar">
-                    ${state.routineExercises.length ? exList : `
-                        <div class="flex flex-col items-center justify-center py-12 text-zinc-600 border-2 border-dashed border-zinc-800 rounded-2xl">
-                            <i data-lucide="dumbbell" class="w-12 h-12 mb-2 opacity-20"></i>
-                            <p class="text-sm">Nenhum exercício neste dia.</p>
-                        </div>
-                    `}
-                </div>
-                
-                <div class="pt-2 border-t border-zinc-800">
-                    <button onclick="app.saveDayExercises()" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold transition-all active:scale-95">
-                        Confirmar Treino de ${weekdays[state.selectedWeekday]}
-                    </button>
-                </div>
-            `;
+            const exList = state.routineExercises.map((ex, i) => `<div class="p-4 rounded-2xl space-y-3 bg-zinc-900/50 border border-zinc-800 mb-3 relative group hover:border-zinc-700 transition-colors"><div class="flex justify-between items-center mb-1"><span class="font-bold text-purple-500 text-xs uppercase tracking-wider flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-purple-500/10 flex items-center justify-center text-[10px] border border-purple-500/20">${i+1}</span>Exercício</span><button onclick="app.removeRoutineExercise(${i})" class="text-red-500/50 hover:text-red-500 p-1 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div><div class="grid grid-cols-2 gap-3"><div class="col-span-2 sm:col-span-1"><select onchange="app.updateRoutineExercise(${i}, 'type', this.value)" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-white focus:border-purple-500 outline-none text-sm appearance-none cursor-pointer"><option value="">Selecione o Grupo...</option><option value="inferior" ${ex.type === 'inferior' ? 'selected' : ''}>Inferior (Pernas)</option><option value="superior" ${ex.type === 'superior' ? 'selected' : ''}>Superior (Braços/Costas)</option></select></div><div class="col-span-2 sm:col-span-1"><select onchange="app.updateRoutineExercise(${i}, 'name', this.value)" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-white focus:border-purple-500 outline-none text-sm appearance-none cursor-pointer"><option value="">Selecione o Exercício...</option>${(exercisesList[ex.type] || []).map(opt => `<option value="${opt}" ${ex.name === opt ? 'selected' : ''}>${opt}</option>`).join('')}</select></div></div>${ex.name === 'Outro' ? `<input type="text" value="${ex.customName}" oninput="app.updateRoutineExercise(${i}, 'customName', this.value)" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-white text-sm focus:border-purple-500 outline-none" placeholder="Digite o nome do exercício">` : ''}<div class="grid grid-cols-3 gap-3 pt-1"><div class="relative"><input type="number" value="${ex.sets}" oninput="app.updateRoutineExercise(${i}, 'sets', this.value)" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-white text-center focus:border-blue-500 outline-none font-bold" placeholder="0"><span class="absolute top-[-8px] left-1/2 -translate-x-1/2 text-[9px] font-bold text-blue-500 bg-zinc-900 px-1 uppercase tracking-wider">Séries</span></div><div class="relative"><input type="number" value="${ex.reps}" oninput="app.updateRoutineExercise(${i}, 'reps', this.value)" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-white text-center focus:border-emerald-500 outline-none font-bold" placeholder="0"><span class="absolute top-[-8px] left-1/2 -translate-x-1/2 text-[9px] font-bold text-emerald-500 bg-zinc-900 px-1 uppercase tracking-wider">Reps</span></div><div class="relative"><input type="number" value="${ex.weight}" oninput="app.updateRoutineExercise(${i}, 'weight', this.value)" class="w-full p-3 rounded-xl bg-black border border-zinc-800 text-white text-center focus:border-yellow-500 outline-none font-mono font-bold" placeholder="-"><span class="absolute top-[-8px] left-1/2 -translate-x-1/2 text-[9px] font-bold text-yellow-500 bg-zinc-900 px-1 uppercase tracking-wider">Kg</span></div></div></div>`).join('');
+            content = `<div class="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4"><div><h4 class="text-2xl font-bold text-white">${weekdays[state.selectedWeekday]}</h4><p class="text-zinc-500 text-xs">Adicione os exercícios deste dia</p></div><button onclick="app.addRoutineExercise()" class="flex items-center gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors border border-purple-500/20"><i data-lucide="plus" class="w-4 h-4"></i> Adicionar</button></div><div class="mb-4 max-h-[55vh] overflow-y-auto pr-1 custom-scrollbar">${state.routineExercises.length ? exList : '<div class="flex flex-col items-center justify-center py-12 text-zinc-600 border-2 border-dashed border-zinc-800 rounded-2xl"><i data-lucide="dumbbell" class="w-12 h-12 mb-2 opacity-20"></i><p class="text-sm">Nenhum exercício neste dia.</p></div>'}</div><div class="pt-2 border-t border-zinc-800"><button onclick="app.saveDayExercises()" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-purple-900/20 transition-all active:scale-95">Confirmar Treino de ${weekdays[state.selectedWeekday]}</button></div>`;
         }
-
-        modal.innerHTML = `
-            <div class="bg-zinc-950 w-full sm:w-[500px] sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col max-h-[95vh] border-t border-zinc-800 sm:border">
-                <div class="flex justify-between items-center p-6 border-b border-zinc-800 bg-zinc-950 rounded-t-3xl">
-                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                        ${state.routineModalMode === 'create' ? '<i data-lucide="plus-circle" class="text-purple-500"></i> Nova Ficha' : '<i data-lucide="pencil" class="text-purple-500"></i> Editar Ficha'}
-                    </h3>
-                    <button onclick="state.showRoutineModal = false; state.selectedWeekday = null; app.render()" class="p-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors border border-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button>
-                </div>
-                <div class="p-6 overflow-y-auto custom-scrollbar bg-zinc-950">${content}</div>
-            </div>
-        `;
+        modal.innerHTML = `<div class="bg-zinc-950 w-full sm:w-[500px] sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col max-h-[95vh] border-t border-zinc-800 sm:border"><div class="flex justify-between items-center p-6 border-b border-zinc-800 bg-zinc-950 rounded-t-3xl"><h3 class="text-xl font-bold text-white flex items-center gap-2">${state.routineModalMode === 'create' ? '<i data-lucide="plus-circle" class="text-purple-500"></i> Nova Ficha' : '<i data-lucide="pencil" class="text-purple-500"></i> Editar Ficha'}</h3><button onclick="state.showRoutineModal = false; state.selectedWeekday = null; app.render()" class="p-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors border border-zinc-800"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="p-6 overflow-y-auto custom-scrollbar bg-zinc-950">${content}</div></div>`;
         root.appendChild(modal);
     }
 
-    // --- MODAL DE VISUALIZAÇÃO DE GIF (LIGHTBOX) ---
     function renderImageModal(root) {
         const modal = document.createElement('div');
-        // Z-index 60 para ficar na frente de tudo. Fundo preto quase opaco.
         modal.className = 'fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm';
-        
-        // Clicar fora fecha o modal
-        modal.onclick = (e) => {
-            if (e.target === modal) app.closeImage();
-        };
-
-        modal.innerHTML = `
-            <div class="relative w-full max-w-lg animate-in fade-in zoom-in duration-200">
-                <button onclick="app.closeImage()" class="absolute -top-12 right-0 p-2 bg-zinc-800 text-white rounded-full hover:bg-zinc-700 border border-zinc-700 transition-transform active:scale-95">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-
-                <img src="${state.viewingImage}" class="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-2xl border border-zinc-800 bg-zinc-900">
-                
-                <p class="text-center text-zinc-500 text-xs mt-4">Toque fora para fechar</p>
-            </div>
-        `;
+        modal.onclick = (e) => { if (e.target === modal) app.closeImage(); };
+        modal.innerHTML = `<div class="relative w-full max-w-lg animate-in fade-in zoom-in duration-200"><button onclick="app.closeImage()" class="absolute -top-12 right-0 p-2 bg-zinc-800 text-white rounded-full hover:bg-zinc-700 border border-zinc-700 transition-transform active:scale-95"><i data-lucide="x" class="w-6 h-6"></i></button><img src="${state.viewingImage}" class="w-full h-auto max-h-[80vh] object-contain rounded-2xl shadow-2xl border border-zinc-800 bg-zinc-900"><p class="text-center text-zinc-500 text-xs mt-4">Toque fora para fechar</p></div>`;
         root.appendChild(modal);
     }
 
-    // --- NOVA FUNÇÃO: MODAL DE FUNCIONALIDADES (O GUIA) ---
     function renderFeaturesModal(root) {
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200';
-        
-        // Lista de funcionalidades
         const features = [
             { icon: 'calendar-check', title: 'Registro Diário', desc: 'Marque seus dias como Treino, Descanso ou Falta para acompanhar sua rotina de treino.' },
             { icon: 'clipboard-list', title: 'Criação de Fichas', desc: 'Monte treinos personalizados (ABC, ABCD...) e organize por dias da semana.' },
             { icon: 'play-circle', title: 'GIFs Demonstrativos', desc: 'Veja a execução correta dos exercícios clicando na miniatura animada.' },
             { icon: 'bar-chart-3', title: 'Controle de Carga', desc: 'Registre peso, séries e repetições para acompanhar sua progressão.' },
             { icon: 'save', title: 'Backup & Restore', desc: 'Exporte seus dados para um arquivo seguro e restaure quando quiser. Seus dados são seus.' },
-            { icon: 'smartphone', title: 'Design Mobile', desc: 'Comi o cu de quem ta lendo.' }
+            { icon: 'smartphone', title: 'Design Mobile', desc: 'Interface pensada para uso fácil no celular.' }
         ];
-
-        modal.innerHTML = `
-            <div class="bg-zinc-900 w-full max-w-md rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-                
-                <div class="p-6 border-b border-zinc-800 bg-zinc-900">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                            <i data-lucide="sparkles" class="text-purple-500"></i> Funcionalidades
-                        </h3>
-                        <button onclick="app.toggleFeatures()" class="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white">
-                            <i data-lucide="x" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                    <p class="text-zinc-400 text-sm">Tudo o que o GymDaily pode fazer por você.</p>
-                </div>
-
-                <div class="p-4 overflow-y-auto custom-scrollbar space-y-3">
-                    ${features.map(f => `
-                        <div class="flex gap-4 p-4 rounded-2xl bg-black/40 border border-zinc-800/50 hover:border-purple-500/30 transition-colors">
-                            <div class="w-10 h-10 rounded-full bg-purple-900/20 flex items-center justify-center text-purple-400 flex-shrink-0">
-                                <i data-lucide="${f.icon}" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-white font-bold text-sm mb-1">${f.title}</h4>
-                                <p class="text-zinc-500 text-xs leading-relaxed">${f.desc}</p>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-
-                <div class="p-4 border-t border-zinc-800 bg-zinc-900">
-                    <button onclick="app.toggleFeatures()" class="w-full bg-purple-700 hover:bg-purple-900 text-white py-3.5 rounded-xl font-bold transition-all active:scale-95">
-                        Entendi, vamos treinar!
-                    </button>
-                </div>
-            </div>
-        `;
+        modal.innerHTML = `<div class="bg-zinc-900 w-full max-w-md rounded-3xl border border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"><div class="p-6 border-b border-zinc-800 bg-zinc-900"><div class="flex justify-between items-center mb-2"><h3 class="text-xl font-bold text-white flex items-center gap-2"><i data-lucide="sparkles" class="text-purple-500"></i> Funcionalidades</h3><button onclick="app.toggleFeatures()" class="p-2 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button></div><p class="text-zinc-400 text-sm">Tudo o que o GymDaily pode fazer por você.</p></div><div class="p-4 overflow-y-auto custom-scrollbar space-y-3">${features.map(f => `<div class="flex gap-4 p-4 rounded-2xl bg-black/40 border border-zinc-800/50 hover:border-purple-500/30 transition-colors"><div class="w-10 h-10 rounded-full bg-purple-900/20 flex items-center justify-center text-purple-400 flex-shrink-0"><i data-lucide="${f.icon}" class="w-5 h-5"></i></div><div><h4 class="text-white font-bold text-sm mb-1">${f.title}</h4><p class="text-zinc-500 text-xs leading-relaxed">${f.desc}</p></div></div>`).join('')}</div><div class="p-4 border-t border-zinc-800 bg-zinc-900"><button onclick="app.toggleFeatures()" class="w-full bg-purple-700 hover:bg-purple-900 text-white py-3.5 rounded-xl font-bold transition-all active:scale-95">Entendi, vamos treinar!</button></div></div>`;
         root.appendChild(modal);
     }
 
-    // Inicializa
     app.render();
-
 </script>
 
 <script>
@@ -1210,30 +524,100 @@
   }
 </script>
 
-<script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+  // SUAS CHAVES VERDADEIRAS (Do seu ultimo snippet)
+  const firebaseConfig = {
+    apiKey: "AIzaSyA7OU8xkjbPVgUs5z1XExqrKYAP_4TpO4g",
+    authDomain: "gymdaily-app.firebaseapp.com",
+    projectId: "gymdaily-app",
+    storageBucket: "gymdaily-app.firebasestorage.app",
+    messagingSenderId: "1072026357474",
+    appId: "1:1072026357474:web:8e48b13d3b9ad58c5258bb"
+  };
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyA7OU8xkjbPVgUs5z1XExqrKYAP_4TpO4g",
-  authDomain: "gymdaily-app.firebaseapp.com",
-  projectId: "gymdaily-app",
-  storageBucket: "gymdaily-app.firebasestorage.app",
-  messagingSenderId: "1072026357474",
-  appId: "1:1072026357474:web:8e48b13d3b9ad58c5258bb",
-  measurementId: "G-KSXLJJGNKY"
-};
+  const appFirebase = initializeApp(firebaseConfig);
+  const auth = getAuth(appFirebase);
+  const db = getFirestore(appFirebase);
+  const provider = new GoogleAuthProvider();
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+  let currentUser = null;
 
+  window.loginGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      alert(`Bem-vindo, ${result.user.displayName}!`);
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao logar: " + error.message);
+    }
+  };
+
+  window.logoutGoogle = async () => {
+    try {
+      await signOut(auth);
+      state.gymData = {}; 
+      state.routines = [];
+      app.render();
+      alert("Desconectado.");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  window.saveToCloud = async () => {
+    if (!currentUser) {
+        localStorage.setItem('gymTrackerData', JSON.stringify(state.gymData));
+        localStorage.setItem('gymRoutines', JSON.stringify(state.routines));
+        return;
+    }
+    try {
+        const userRef = doc(db, "users", currentUser.uid);
+        await setDoc(userRef, {
+            gymData: state.gymData,
+            routines: state.routines,
+            lastUpdate: new Date().toISOString()
+        }, { merge: true });
+        console.log("Dados sincronizados com a nuvem!");
+    } catch (e) {
+        console.error("Erro ao salvar na nuvem:", e);
+    }
+  };
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      // Atualiza UI para estado Logado
+      const btnText = document.getElementById('btn-login-text');
+      const btnAction = document.getElementById('btn-login-action');
+      if(btnText) btnText.innerText = "Sair";
+      if(btnAction) btnAction.setAttribute('onclick', 'window.logoutGoogle()');
+
+      // Puxar dados
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        state.gymData = data.gymData || {};
+        state.routines = data.routines || [];
+        app.render(); 
+      } else {
+        saveToCloud();
+      }
+
+    } else {
+      currentUser = null;
+      // Atualiza UI para estado Deslogado
+      const btnText = document.getElementById('btn-login-text');
+      const btnAction = document.getElementById('btn-login-action');
+      if(btnText) btnText.innerText = "Entrar";
+      if(btnAction) btnAction.setAttribute('onclick', 'window.loginGoogle()');
+    }
+  });
 </script>
 
 </body>

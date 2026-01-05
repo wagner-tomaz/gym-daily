@@ -1,25 +1,22 @@
-const CACHE_NAME = 'gym-daily-v2-offline'; // Mudei a versão para forçar atualização
+const CACHE_NAME = 'gym-daily-dev-v3'; // Mudei o nome para forçar atualização
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './images/gymdaily.png',
-  './libs/tailwind.js', // Agora local
-  './libs/lucide.js'    // Agora local
+  './libs/tailwind.js',
+  './libs/lucide.js'
 ];
 
-// Instalação
 self.addEventListener('install', (e) => {
+  self.skipWaiting(); // Força o novo Service Worker a ativar imediatamente
   e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Cacheando arquivos locais...');
-      return cache.addAll(ASSETS);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
 });
 
-// Ativação (Limpa caches antigos se houver)
 self.addEventListener('activate', (e) => {
+  // Limpa caches antigos imediatamente
   e.waitUntil(
     caches.keys().then((keyList) => {
       return Promise.all(keyList.map((key) => {
@@ -27,16 +24,27 @@ self.addEventListener('activate', (e) => {
           return caches.delete(key);
         }
       }));
-    })
+    }).then(() => self.clients.claim()) // Assume o controle da página imediatamente
   );
 });
 
-// Interceptação de Rede (Estratégia: Cache First, depois Network)
+// ESTRATÉGIA: NETWORK FIRST (REDE PRIMEIRO)
+// Isso resolve o problema do Ctrl+F5. Ele sempre tenta baixar o novo.
 self.addEventListener('fetch', (e) => {
   e.respondWith(
-    caches.match(e.request).then((response) => {
-      // Se achar no cache, retorna o cache. Se não, tenta a internet.
-      return response || fetch(e.request);
-    })
+    fetch(e.request)
+      .then((response) => {
+        // Se a internet funcionou, clonamos a resposta para atualizar o cache
+        // assim o offline continua funcionando com a versão mais recente
+        const resClone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(e.request, resClone);
+        });
+        return response;
+      })
+      .catch(() => {
+        // Se a internet falhar, aí sim usamos o cache
+        return caches.match(e.request);
+      })
   );
 });
