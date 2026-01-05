@@ -812,10 +812,11 @@
         }
     }
 
-    // --- MODAL CALENDÁRIO ---
+    // --- MODAL CALENDÁRIO (CENTRALIZADO) ---
     function renderCalendarModal(root) {
         const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 flex items-end sm:items-center justify-center sm:p-4 z-50';
+        // MUDANÇA 1: Troquei 'items-end' por 'items-center' e adicionei 'p-4' para não colar na borda da tela
+        modal.className = 'fixed inset-0 flex items-center justify-center p-4 z-50';
         modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
         modal.style.backdropFilter = 'blur(4px)';
         
@@ -956,7 +957,7 @@
         }
 
         modal.innerHTML = `
-            <div class="bg-black w-full sm:w-[450px] sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-black w-full max-w-[450px] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-zinc-800">
                 <div class="flex justify-between items-center p-5 border-b border-zinc-800 bg-zinc-900">
                     <div>
                         <h3 class="text-xl font-bold text-white">Dia ${state.selectedDay.day}</h3>
