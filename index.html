@@ -3,6 +3,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gym Daily</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
     <link rel="apple-touch-icon" href="../gym-daily/images/gymdaily.png">
     <link rel="icon" sizes="192x192" href="../gym-daily/images/gymdaily.png">
     
@@ -1186,6 +1188,16 @@
     // Inicializa
     app.render();
 
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log('App instalado com sucesso'))
+        .catch((err) => console.log('Erro ao instalar:', err));
+    });
+  }
 </script>
 </body>
 </html>
