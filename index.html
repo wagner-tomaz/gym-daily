@@ -1631,27 +1631,28 @@ Entendi, vamos treinar!
       };
 
       window.saveToCloud = async () => {
-        if (!currentUser) {
-          localStorage.setItem("gymTrackerData", JSON.stringify(state.gymData));
-          localStorage.setItem("gymRoutines", JSON.stringify(state.routines));
-          return;
-        }
-        try {
-          const userRef = doc(db, "users", currentUser.uid);
-          await setDoc(
-            userRef,
-            {
-              gymData: state.gymData,
-              routines: state.routines,
-              lastUpdate: new Date().toISOString(),
-            },
-            { merge: true }
-          );
-          console.log("Dados salvos na nuvem!");
-        } catch (e) {
-          console.error("Erro ao salvar:", e);
-        }
-      };
+    if (!currentUser) {
+        localStorage.setItem('gymTrackerData', JSON.stringify(state.gymData));
+        localStorage.setItem('gymRoutines', JSON.stringify(state.routines));
+        return;
+    }
+    try {
+        const userRef = doc(db, "users", currentUser.uid);
+        
+        // --- A MUDANÇA ESTÁ AQUI ---
+        // Removemos o { merge: true }. Agora ele sobrescreve o documento
+        // garantindo que o que foi deletado no app suma do banco também.
+        await setDoc(userRef, {
+            gymData: state.gymData,
+            routines: state.routines,
+            lastUpdate: new Date().toISOString()
+        });
+        
+        console.log("Dados sincronizados (Sobrescrita completa)!");
+    } catch (e) {
+        console.error("Erro ao salvar:", e);
+    }
+  };
 
       onAuthStateChanged(auth, async (user) => {
         console.log("Estado:", user ? "Logado" : "Deslogado");
