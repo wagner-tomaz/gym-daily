@@ -58,7 +58,7 @@
       }
     </style>
   </head>
-  <body class="min-h-screen bg-black pb-24 select-none">
+  <body class="min-h-screen bg-zinc-950 pb-24 select-none">
     <div id="root" class="max-w-md mx-auto p-4"></div>
 
     <div
@@ -166,73 +166,78 @@
       const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
       const exerciseGifs = {
-        // === CARDIO (Novos - Cole seus links entre as aspas) ===
-        "Esteira": "",
-        "Escada (Simulador)": "",
-        "Bicicleta Ergométrica": "",
-        "Elíptico (Transport)": "",
-        "Pular Corda": "",
-        "Remo (Ergômetro)": "",
+        // === CARDIO & AQUECIMENTO ===
+        "Esteira": "https://i.pinimg.com/originals/2c/87/4b/2c874b1b5b30a07eeee1e3002d2e52b4.gif",
+        "Escada": "https://www.hipertrofia.org/blog/wp-content/uploads/2024/09/walking-on-stepmill.gif", // Nome da ficha: "Escada"
+        "Bicicleta Ergométrica": "https://i.pinimg.com/originals/88/00/6a/88006a03e1da8a94a7843f5306dac42f.gif",
+        "Elíptico (Transport)": "https://gymvisual.com/img/p/1/5/8/4/1/15841.gif",
+        "Pular Corda": "https://www.mundoboaforma.com.br/wp-content/uploads/2021/04/pular-corda.gif",
+        "Caminhada Leve": "https://png.pngtree.com/png-clipart/20220419/original/pngtree-man-doing-walking-exercise-png-image_7538567.png", // Ficha Sábado
 
-        // === INFERIOR ===
+        // === INFERIOR (Pernas/Glúteos) ===
         "Agachamento Livre": "https://media1.tenor.com/m/pdMmsiutWkcAAAAC/gym.gif",
+        "Agachamento Hack": "https://media.tenor.com/jiqHF0MkHeYAAAAM/gym.gif", 
         "Leg Press 45°": "https://media1.tenor.com/m/xJh_-w_SxckAAAAC/leg-press.gif",
-        "Agachamento Hack": "https://i.pinimg.com/originals/a5/10/b7/a510b75341f3c63e528111c112f19817.gif", 
         "Cadeira Extensora": "https://media1.tenor.com/m/bqKtsSuqilQAAAAC/gym.gif",
         "Cadeira Flexora": "https://i0.wp.com/omelhortreino.com.br/wp-content/uploads/2025/07/Cadeira-flexora.gif?resize=550%2C550&ssl=1",
-        "Mesa Flexora": "https://media1.tenor.com/m/fj_cZPprAyMAAAAC/gym.gif",
+        "Mesa Flexora": "https://media1.tenor.com/m/fj_cZPprAyMAAAAC/gym.gif", // Ficha: "Mesa Flexora (Deitado)"
         "Stiff": "https://i.pinimg.com/originals/82/4d/fd/824dfd405284597cd20e8a55233e2d77.gif",
         "Levantamento Terra": "https://www.hipertrofia.org/blog/wp-content/uploads/2017/11/barbell-deadlift.gif",
-        "Levantamento Terra Sumô": "https://www.hipertrofia.org/blog/wp-content/uploads/2023/03/barbell-sumo-deadlift.gif", 
         "Elevação Pélvica": "https://i0.wp.com/meutreinador.com/wp-content/uploads/2024/04/elevacao-pelvica-no-banco.gif?fit=1080%2C1080&ssl=1",
-        "Glúteo Polia (Coice)": "https://karoldeliberato.com.br/wp-content/uploads/2023/04/image32-1.gif", 
-        "Panturrilha em pé": "https://www.hipertrofia.org/blog/wp-content/uploads/2023/03/lever-standing-calf-raise.gif",
-        "Panturrilha Sentado": "https://www.hipertrofia.org/blog/wp-content/uploads/2018/10/lever-seated-calf-raise-.gif", 
-        "Elevação de Tibial (Anterior)": "https://media.tenor.com/AniZhPNWxg8AAAAM/tibialis-anterior-foot.gif", 
         "Cadeira Abdutora": "https://www.hipertrofia.org/blog/wp-content/uploads/2024/09/lever-seated-hip-abduction.gif",
         "Cadeira Adutora": "https://i.pinimg.com/originals/4e/17/b8/4e17b88b6b11c54155939c0a5b3c3381.gif",
         "Agachamento Búlgaro": "https://www.hipertrofia.org/blog/wp-content/uploads/2024/06/agachamento-bulgaro.gif",
-        "Afundo": "https://www.hipertrofia.org/blog/wp-content/uploads/2024/09/Static-Lunge.gif",
+        "Subida no Banco (Step-up)": "https://www.mundoboaforma.com.br/wp-content/uploads/2021/09/stepup-alto-no-banco-com-halteres.gif", // Novo da ficha
+        "Abdução de Quadril (Deitado)": "https://www.mundoboaforma.com.br/wp-content/uploads/2021/09/abducao-do-quadril-pernas-deitado-no-solo-com-elevacao-da-perna-reta.gif", // Novo da ficha Sábado
+        "Mobilidade de Anca e Tornozelo": "https://nabexigamandoeu.pt/wp-content/uploads/2018/06/05_gif.gif", // Novo
 
-        // === SUPERIOR ===
-        "Supino Reto": "https://www.hipertrofia.org/blog/wp-content/uploads/2018/09/barbell-decline-bench-press.gif",
-        "Supino Inclinado": "https://www.hipertrofia.org/blog/wp-content/uploads/2023/05/dumbbell-incline-bench-press.gif",
-        "Supino Declinado": "https://www.hipertrofia.org/blog/wp-content/uploads/2018/09/barbell-decline-bench-press.gif", 
+        // === PANTURRILHA ===
+        "Panturrilha em Pé": "https://www.hipertrofia.org/blog/wp-content/uploads/2023/03/lever-standing-calf-raise.gif",
+        "Panturrilha Sentado": "https://www.hipertrofia.org/blog/wp-content/uploads/2018/10/lever-seated-calf-raise-.gif", 
+        "Panturrilha (Livre ou Máquina)": "https://www.hipertrofia.org/blog/wp-content/uploads/2023/07/standing-calf-raise-on-a-staircase.gif", // Ficha Sábado
+
+        // === PEITO ===
+        "Supino Reto": "https://www.hipertrofia.org/blog/wp-content/uploads/2018/09/barbell-decline-bench-press.gif", // Ficha: "Supino Reto (Halteres)" - O gif é barra, mas serve a referência
+        "Supino Inclinado": "https://www.hipertrofia.org/blog/wp-content/uploads/2023/05/dumbbell-incline-bench-press.gif", // Ficha: "Supino Inclinado (Halteres)"
+        "Peck Deck (Crucifixo Máquina)": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/12/voador-no-aparelho.gif", // Nome exato da ficha
         "Crucifixo": "https://www.hipertrofia.org/blog/wp-content/uploads/2023/09/dumbbell-fly.gif",
-        "Crucifixo Máquina (Peck Deck)": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/12/voador-no-aparelho.gif",
         "Crossover (Polia)": "https://i0.wp.com/meutreinador.com/wp-content/uploads/2024/04/Crossover-polia-alta.gif?fit=1080%2C1080&ssl=1", 
         "Mergulho": "https://i.pinimg.com/originals/4a/48/40/4a48407e46bab53a0c6050935f61f669.gif",
-        
-        "Barra Fixa": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/12/costas-barra-fixa-pegada-aberta-palma-para-frente-chinup.gif", 
-        "Puxada Alta (aberta)": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/12/costas-puxada-aberta-com-barra-no-pulley.gif",
-        "Puxada Triângulo": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/12/costas-puxada-para-frente-no-pulley-com-triangulo.gif", 
-        "Remada Curvada": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/12/costas-remada-curvada-.gif",
-        "Remada Baixa/Sentada": "https://media.tenor.com/vy_b35185M0AAAAM/remada-baixa-triangulo.gif", 
-        "Remada Unilateral (Serrote)": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/12/costas-remada-unilateral-com-halter-serrote-no-banco.gif", 
-        "Pulldown (Polia)": "https://www.hipertrofia.org/blog/wp-content/uploads/2024/09/pulldown-corda.gif", 
 
+        // === COSTAS ===
+        "Puxada Aberta (Pulldown)": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/12/costas-puxada-aberta-com-barra-no-pulley.gif", // Nome exato da ficha
+        "Remada Sentada (Triângulo)": "https://media.tenor.com/vy_b35185M0AAAAM/remada-baixa-triangulo.gif", // Nome exato da ficha
+        "Barra Fixa": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/12/costas-barra-fixa-pegada-aberta-palma-para-frente-chinup.gif", 
+        "Remada Curvada": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/12/costas-remada-curvada-.gif",
+        "Remada Unilateral (Serrote)": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/12/costas-remada-unilateral-com-halter-serrote-no-banco.gif", 
+        "Dead Hang (Pendurar na barra)": "https://media.tenor.com/PfpznfyXlk8AAAAM/hang-strong.gif", // Novo da ficha
+
+        // === OMBROS ===
         "Desenvolvimento": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/12/desenvolvimento-para-ombros-com-halteres.gif",
         "Elevação Lateral": "https://media.tenor.com/cy46UbnfUrkAAAAM/eleva%C3%A7%C3%A3o-lateral-hateres.gif",
-        "Elevação Frontal": "https://www.hipertrofia.org/blog/wp-content/uploads/2018/09/elevacao-frontal-com-anilha-v2.gif", 
+        "Elevação Frontal": "https://image.tuasaude.com/media/article/sz/nf/elevacao-frontal_75624.gif?width=686&height=487", 
         "Face Pull": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Face-Pull.gif", 
-        "Encolhimento (Trapézio)": "https://www.hipertrofia.org/blog/wp-content/uploads/2018/03/encolhimento-com-barra.gif", 
+        "Encolhimento (Trapézio)": "https://www.hipertrofia.org/blog/wp-content/uploads/2024/01/dumbbell-shrug.gif", 
 
-        "Rosca Direta": "https://www.hipertrofia.org/blog/wp-content/uploads/2024/02/barbell-standing-close-grip-curl.gif",
-        "Rosca Martelo": "https://www.hipertrofia.org/blog/wp-content/uploads/2023/04/dumbbell-hammer-curl-v-2.gif",
+        // === BRAÇOS (Bíceps/Tríceps/Antebraço) ===
         "Rosca Scott": "https://www.mundoboaforma.com.br/wp-content/uploads/2020/11/Rosca-Scott-com-halteres-com-dois-bracos.gif", 
         "Rosca Inversa": "https://i0.wp.com/omelhortreino.com.br/wp-content/uploads/2025/04/Rosca-Inversa.gif?resize=550%2C550&ssl=1",
-
+        "Flexão de Punho": "https://treinomestre.com.br/wp-content/uploads/2024/09/flexao-de-punho-com-halteres.gif",
+        "Rosca Martelo": "https://www.hipertrofia.org/blog/wp-content/uploads/2023/04/dumbbell-hammer-curl-v-2.gif",
         "Tríceps Corda": "https://media.tenor.com/mbebKudZjxYAAAAM/tr%C3%ADceps-pulley.gif",
+        "Rosca Pajé (Wrist Roller)": "https://burnfit.io/wp-content/uploads/2023/11/WRIST_ROLLER.gif", // Novo da ficha
+        "Rosca Direta": "https://www.hipertrofia.org/blog/wp-content/uploads/2024/02/barbell-standing-close-grip-curl.gif",
         "Tríceps Testa": "https://www.hipertrofia.org/blog/wp-content/uploads/2024/02/barbell-lying-triceps-extension-skull-crusher.gif",
         "Tríceps Francês": "https://www.hipertrofia.org/blog/wp-content/uploads/2025/01/triceps-frances-com-um-halter-sentado.gif", 
         "Tríceps Coice": "https://karoldeliberato.com.br/wp-content/uploads/2023/05/image68.gif", 
 
-        "Flexão de Punho": "https://treinomestre.com.br/wp-content/uploads/2024/09/flexao-de-punho-com-halteres.gif",
-
-        // === ABDOMINAIS ===
+        // === CORE / ABS / LOMBAR ===
+        "Abdominal Infra (Elevação pernas)": "https://grandeatleta.com.br/wp-content/uploads/2024/03/Abdominal-infra-solo.gif", // Nome ajustado
+        "Prancha Abdominal": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSERETl8HEs2s1GLn4FV5zdxsELa2-_oxBV7w&s", // Nome ajustado
         "Abdominal Supra (Crunch)": "https://www.mundoboaforma.com.br/wp-content/uploads/2023/02/47271301-abdominal-supra.gif",
-        "Abdominal Infra (Elevação de Pernas)": "https://grandeatleta.com.br/wp-content/uploads/2024/03/Abdominal-infra-solo.gif",
-        "Prancha (Plank)": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSERETl8HEs2s1GLn4FV5zdxsELa2-_oxBV7w&s",
+        "Extensão Lombar (Banco Romano)": "https://media.tenor.com/Fsu8AmbXPl0AAAAM/back-extension.gif", // Novo da ficha
+        "Stomach Vacuum": "https://www.wikihow.com/images/thumb/9/96/Do-the-Stomach-Vacuum-Exercise-Step-5-Version-2.jpg/v4-460px-Do-the-Stomach-Vacuum-Exercise-Step-5-Version-2.jpg", // Novo da ficha
+        "Flexão de Braço (Push-up)": "https://i.pinimg.com/originals/b0/da/7f/b0da7f7f3556befcc7cbdd0ba33be39e.gif", // Novo da ficha (Core/Peito)
 
         // === PADRÃO ===
         "Outro": "https://media.forgecdn.net/attachments/627/928/pushup.gif"
@@ -249,42 +254,42 @@
       ];
 
       const exercisesList = {
-        cardio: [ // --- NOVA CATEGORIA ---
+        cardio: [ 
+            "Escada",
             "Esteira",
-            "Escada (Simulador)",
+            "Caminhada Leve",
             "Bicicleta Ergométrica",
             "Elíptico (Transport)",
             "Pular Corda",
-            "Remo (Ergômetro)",
+            "Mobilidade de Anca e Tornozelo",
             "Outro"
         ],
         inferior: [
             // --- Quadríceps ---
             "Agachamento Livre",
-            "Leg Press 45°",
             "Agachamento Hack",
+            "Leg Press 45°",
             "Cadeira Extensora",
             "Agachamento Búlgaro",
+            "Subida no Banco (Step-up)",
             "Afundo",
 
-            // --- Posterior ---
+            // --- Posterior & Glúteo ---
+            "Elevação Pélvica",
+            "Stiff",
             "Mesa Flexora",
             "Cadeira Flexora",
-            "Stiff",
-            
-            // --- Glúteos ---
-            "Levantamento Terra Sumô",
-            "Elevação Pélvica",
-            "Glúteo Polia (Coice)",
+            "Abdução de Quadril (Deitado)",
             "Cadeira Abdutora",
+            "Glúteo Polia (Coice)", // (Mantive como opção extra)
 
             // --- Adutores ---
             "Cadeira Adutora",
 
-            // --- Panturrilha & TIBIAL ---
-            "Panturrilha em pé",
+            // --- Panturrilha ---
+            "Panturrilha em Pé",
             "Panturrilha Sentado",
-            "Elevação de Tibial (Anterior)", // <--- O EXERCÍCIO QUE VOCÊ PEDIU
+            "Panturrilha (Livre ou Máquina)",
 
             // --- Geral ---
             "Levantamento Terra",
@@ -292,57 +297,68 @@
         ],
         superior: [
             // --- Peito ---
-            "Supino Reto",
             "Supino Inclinado",
-            "Supino Declinado",
+            "Supino Reto",
+            "Peck Deck (Crucifixo Máquina)",
             "Crucifixo",
-            "Crucifixo Máquina (Peck Deck)",
-            "Crossover (Polia)",
+            "Flexão de Braço (Push-up)",
             "Mergulho",
+            "Crossover (Polia)",
 
             // --- Costas ---
+            "Puxada Aberta (Pulldown)",
+            "Remada Sentada (Triângulo)",
             "Barra Fixa",
-            "Puxada Alta (aberta)",
-            "Puxada Triângulo",
             "Remada Curvada",
-            "Remada Baixa/Sentada",
             "Remada Unilateral (Serrote)",
-            "Pulldown (Polia)",
+            "Dead Hang (Pendurar na barra)",
 
-            // --- Ombros/Trapézio ---
+            // --- Ombros ---
             "Desenvolvimento",
             "Elevação Lateral",
             "Elevação Frontal",
             "Face Pull",
             "Encolhimento (Trapézio)",
 
-            // --- Bíceps ---
-            "Rosca Direta",
-            "Rosca Martelo",
+            // --- Braços (Bíceps/Tríceps) ---
             "Rosca Scott",
-            "Rosca Inversa",
-
-            // --- Tríceps ---
+            "Rosca Martelo",
+            "Rosca Direta",
             "Tríceps Corda",
             "Tríceps Testa",
             "Tríceps Francês",
             "Tríceps Coice",
 
             // --- Antebraço ---
+            "Rosca Inversa",
             "Flexão de Punho",
+            "Rosca Pajé (Wrist Roller)",
 
-            // --- Abdominais ---
+            // --- Core / Lombar ---
+            "Abdominal Infra (Elevação pernas)",
             "Abdominal Supra (Crunch)",
-            "Abdominal Infra (Elevação de Pernas)",
-            "Prancha (Plank)",
+            "Prancha Abdominal",
+            "Extensão Lombar (Banco Romano)",
+            "Stomach Vacuum",
 
             "Outro",
         ],
         mesclado: [],
       };
+
       exercisesList.mesclado = [
         ...exercisesList.inferior.slice(0, -1),
         ...exercisesList.superior,
+      ];
+
+      // --- LISTA PARA DESTAQUE VISUAL ---
+      const ultimateList = [
+        "Elevação Pélvica", "Stiff", "Cadeira Flexora", "Leg Press 45°", "Cadeira Abdutora", "Panturrilha em Pé", "Cadeira Extensora",
+        "Supino Inclinado", "Peck Deck (Crucifixo Máquina)", "Puxada Aberta (Pulldown)", "Remada Sentada (Triângulo)", "Rosca Scott", "Rosca Inversa", "Flexão de Punho",
+        "Escada", "Abdominal Infra (Elevação pernas)", "Prancha Abdominal", "Abdominal Supra (Crunch)", "Extensão Lombar (Banco Romano)", "Flexão de Braço (Push-up)", "Stomach Vacuum",
+        "Agachamento Livre", "Agachamento Hack", "Agachamento Búlgaro", "Mesa Flexora", "Subida no Banco (Step-up)", "Panturrilha Sentado", "Cadeira Adutora",
+        "Desenvolvimento", "Elevação Lateral", "Supino Reto", "Rosca Martelo", "Tríceps Corda", "Rosca Pajé (Wrist Roller)", "Dead Hang (Pendurar na barra)",
+        "Panturrilha (Livre ou Máquina)", "Abdução de Quadril (Deitado)", "Mobilidade de Anca e Tornozelo", "Caminhada Leve"
       ];
 
       // === UTILITÁRIOS ===
@@ -418,12 +434,14 @@
 
         setPickerFilter: (filter) => {
             state.pickerFilter = filter;
-            app.render();
+            // Aqui podemos usar render completo para atualizar as abas coloridas
+            app.render(); 
         },
 
         setPickerSearch: (text) => {
             state.pickerSearch = text;
-            app.render();
+            // --- MUDANÇA: NÃO CHAMA app.render() ---
+            updatePickerGridOnly(); 
         },
 
         selectExerciseFromPicker: (name, type) => {
@@ -1070,7 +1088,7 @@
             <div class="text-center py-20 text-zinc-500">
                 <i data-lucide="coffee" class="w-12 h-12 mx-auto mb-3 opacity-20"></i>
                 <p>Nenhum exercício neste dia</p>
-                <button onclick="app.editRoutine(${r.id})" class="text-purple-400 mt-4 text-sm hover:underline">Adicionar Exercícios</button>
+                <button onclick="app.editDayDirectly(${r.id}, ${d})" class="text-purple-400 mt-4 text-sm hover:underline">Adicionar Exercícios</button>
             </div>
         `
               : exercises
@@ -1385,33 +1403,70 @@
         let content = '';
 
         if (state.selectedWeekday === null) {
-            // ... (CÓDIGO DA TELA DE SELEÇÃO DE DIAS CONTINUA IGUAL AO ANTERIOR) ...
-            // Vou replicar aqui para garantir que fique completo, mas é o mesmo Grid de Dias da resposta anterior
+            // --- TELA 1: SELEÇÃO DE DIAS ---
             const weekdayButtons = weekdays.map((d, i) => {
                 const count = state.currentRoutine.days[i].length;
                 const hasExercises = count > 0;
-                const cardClass = hasExercises ? 'bg-zinc-900 border-purple-500 shadow-lg shadow-purple-900/20' : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 opacity-70 hover:opacity-100';
+                
+                // Sem sombras, design flat
+                const cardClass = hasExercises 
+                    ? 'bg-zinc-900 border-purple-500' // Ativo
+                    : 'bg-zinc-900/40 border-zinc-800 hover:border-zinc-700 opacity-70'; // Inativo
+                
                 const textClass = hasExercises ? 'text-white' : 'text-zinc-600';
                 const subTextClass = hasExercises ? 'text-purple-400' : 'text-zinc-600';
-                return `<button onclick="app.openDayEditor(${i})" class="${cardClass} relative flex flex-col justify-between p-4 rounded-2xl border transition-all active:scale-95 text-left group h-28"><div class="flex justify-between items-start w-full"><span class="text-3xl font-black tracking-tighter ${textClass}">${d.substring(0,3).toUpperCase()}</span>${hasExercises ? `<div class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg"><i data-lucide="dumbbell" class="w-4 h-4"></i></div>` : `<div class="p-1.5"><i data-lucide="plus" class="w-4 h-4 text-zinc-700 group-hover:text-zinc-500"></i></div>`}</div><div><p class="text-[10px] font-bold uppercase tracking-widest ${subTextClass}">${hasExercises ? 'Treino' : 'Vazio'}</p><p class="text-xs text-zinc-500 mt-0.5">${hasExercises ? `${count} exercícios` : 'Toque p/ adicionar'}</p></div></button>`;
+
+                return `
+                <button onclick="app.openDayEditor(${i})" class="${cardClass} relative flex flex-col justify-between p-4 rounded-2xl border transition-all active:scale-95 text-left group h-28">
+                    <div class="flex justify-between items-start w-full">
+                        <span class="text-3xl font-black tracking-tighter ${textClass}">
+                            ${d.substring(0,3).toUpperCase()}
+                        </span>
+                        ${hasExercises 
+                            ? `<div class="bg-purple-500/20 text-purple-400 p-1.5 rounded-lg"><i data-lucide="dumbbell" class="w-4 h-4"></i></div>` 
+                            : `<div class="p-1.5"><i data-lucide="plus" class="w-4 h-4 text-zinc-700 group-hover:text-zinc-500"></i></div>`
+                        }
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-widest ${subTextClass}">${hasExercises ? 'Treino' : 'Vazio'}</p>
+                        <p class="text-xs text-zinc-500 mt-0.5">${hasExercises ? `${count} exercícios` : 'Toque p/ adicionar'}</p>
+                    </div>
+                </button>
+                `;
             }).join('');
-            content = `<div class="mb-6"><label class="block text-xs font-bold text-zinc-500 mb-2 uppercase tracking-wider">Nome da Ficha</label><input type="text" value="${escapeHtml(state.routineName)}" oninput="state.routineName = this.value" class="w-full p-4 rounded-xl bg-black border border-zinc-800 text-white focus:border-purple-500 outline-none text-lg font-bold placeholder-zinc-700 transition-colors" placeholder="Ex: Hipertrofia ABC"></div><div class="flex flex-col mb-2 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar"><label class="block text-xs font-bold text-zinc-500 mb-3 uppercase tracking-wider">Configurar Dias</label><div class="grid grid-cols-2 gap-3 pb-4">${weekdayButtons}</div></div><div class="pt-2 border-t border-zinc-800"><button onclick="app.saveRoutine()" class="w-full bg-purple-700 hover:bg-purple-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-purple-900/20 transition-all active:scale-95">Salvar Ficha</button></div>`;
+
+            content = `
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-zinc-500 mb-2 uppercase tracking-wider">Nome da Ficha</label>
+                    <input type="text" value="${escapeHtml(state.routineName)}" oninput="state.routineName = this.value" class="w-full p-4 rounded-xl bg-black border border-zinc-800 text-white focus:border-purple-500 outline-none text-lg font-bold placeholder-zinc-700 transition-colors" placeholder="Ex: Hipertrofia">
+                </div>
+                <div class="flex flex-col mb-2 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
+                    <label class="block text-xs font-bold text-zinc-500 mb-3 uppercase tracking-wider">Configurar Dias</label>
+                    <div class="grid grid-cols-2 gap-3 pb-4">
+                        ${weekdayButtons}
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-zinc-800">
+                    <button onclick="app.saveRoutine()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-xl font-bold transition-all active:scale-95">
+                        Salvar Ficha
+                    </button>
+                </div>
+            `;
         } else {
-            // --- TELA 2: LISTA COM O NOVO VISUAL ---
+            // --- TELA 2: LISTA DE EXERCÍCIOS ---
             const exList = state.routineExercises.map((ex, i) => {
                 const gifUrl = exerciseGifs[ex.name] || exerciseGifs[ex.name.replace(' 45°', '')] || exerciseGifs[ex.customName] || exerciseGifs['Outro'];
-                const displayTitle = ex.name === 'Outro' ? (ex.customName || 'Exercício Personalizado') : ex.name;
+                const displayTitle = ex.name === 'Outro' ? (ex.customName || 'Personalizado') : ex.name;
 
                 return `
                 <div class="p-3 rounded-2xl bg-zinc-900/50 border border-zinc-800 mb-3 relative group">
                     <div class="flex items-start gap-3 mb-3">
                         <div onclick="app.openPicker(${i})" class="w-14 h-14 shrink-0 rounded-xl bg-black border border-zinc-700 overflow-hidden relative cursor-pointer hover:border-purple-500 transition-colors">
-                            <img src="${gifUrl}" class="w-full h-full object-cover opacity-80">
+                            <img src="${gifUrl}" class="w-full h-full object-cover opacity-80" onerror="this.src='https://placehold.co/100x100/27272a/FFF?text=IMG'">
                             <div class="absolute inset-0 flex items-center justify-center bg-black/30">
                                 <i data-lucide="refresh-cw" class="w-4 h-4 text-white opacity-70"></i>
                             </div>
                         </div>
-
                         <div class="flex-1 min-w-0">
                             <div class="flex justify-between items-start">
                                 <div onclick="app.openPicker(${i})" class="cursor-pointer">
@@ -1420,10 +1475,9 @@
                                 </div>
                                 <button onclick="app.removeRoutineExercise(${i})" class="text-red-500/40 hover:text-red-500 p-1 -mr-2"><i data-lucide="x" class="w-4 h-4"></i></button>
                             </div>
-                            ${ex.name === 'Outro' ? `<input type="text" value="${escapeHtml(ex.customName)}" oninput="app.updateRoutineExercise(${i}, 'customName', this.value)" class="mt-2 w-full bg-black/50 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-white focus:border-purple-500 outline-none" placeholder="Nome do exercício...">` : ''}
+                            ${ex.name === 'Outro' ? `<input type="text" value="${escapeHtml(ex.customName)}" oninput="app.updateRoutineExercise(${i}, 'customName', this.value)" class="mt-2 w-full bg-black/50 border border-zinc-700 rounded-lg px-2 py-1 text-xs text-white focus:border-purple-500 outline-none" placeholder="Nome...">` : ''}
                         </div>
                     </div>
-
                     <div class="grid grid-cols-3 gap-2">
                         <div class="relative">
                             <input type="number" value="${escapeHtml(ex.sets)}" oninput="app.updateRoutineExercise(${i}, 'sets', this.value)" class="w-full p-2.5 rounded-lg bg-black border border-zinc-800 text-white text-center focus:border-blue-500 outline-none font-bold text-sm" placeholder="0">
@@ -1447,7 +1501,7 @@
                         <h4 class="text-2xl font-bold text-white">${weekdays[state.selectedWeekday]}</h4>
                         <p class="text-zinc-500 text-xs">Adicione os exercícios deste dia</p>
                     </div>
-                    <button onclick="app.openPicker()" class="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-lg shadow-purple-900/20 active:scale-95">
+                    <button onclick="app.openPicker()" class="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95">
                         <i data-lucide="plus" class="w-4 h-4"></i> Adicionar
                     </button>
                 </div>
@@ -1462,7 +1516,7 @@
                 </div>
                 
                 <div class="pt-2 border-t border-zinc-800">
-                    <button onclick="app.saveDayExercises()" class="w-full bg-white hover:bg-zinc-200 text-black py-4 rounded-xl font-bold shadow-lg transition-all active:scale-95">
+                    <button onclick="app.saveDayExercises()" class="w-full bg-white hover:bg-zinc-200 text-black py-4 rounded-xl font-bold transition-all active:scale-95">
                         Salvar Treino
                     </button>
                 </div>
@@ -1483,14 +1537,15 @@
         root.appendChild(modal);
     }
 
-    function renderExercisePicker(root) {
-        const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 z-[60] bg-black/95 flex flex-col animate-in fade-in duration-200';
-        
+    // --- ATUALIZA SÓ O GRID (SEM FECHAR TECLADO) ---
+    function updatePickerGridOnly() {
+        const container = document.getElementById('picker-grid-container');
+        if (!container) return;
+
         // 1. Lógica de Filtro
         let list = [];
         if (state.pickerFilter === 'todos') {
-            const all = [...exercisesList.inferior, ...exercisesList.superior];
+            const all = [...exercisesList.cardio, ...exercisesList.inferior, ...exercisesList.superior];
             list = [...new Set(all)]; 
         } else {
             list = exercisesList[state.pickerFilter] || [];
@@ -1502,16 +1557,88 @@
             list = list.filter(ex => ex.toLowerCase().includes(term));
         }
 
-        // 3. Renderiza o Grid
+        // 3. Gera o HTML
+        if (list.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-zinc-500 mt-20 flex flex-col items-center">
+                    <i data-lucide="frown" class="w-10 h-10 mb-2 opacity-50"></i>
+                    <p>Nenhum exercício encontrado</p>
+                </div>`;
+        } else {
+            container.innerHTML = `<div class="grid grid-cols-3 gap-3 pb-20">` + list.map(exName => {
+                const gifUrl = exerciseGifs[exName] || exerciseGifs[exName.replace(' 45°', '')] || exerciseGifs['Outro'];
+                const realType = exercisesList.inferior.includes(exName) ? 'inferior' : (exercisesList.cardio.includes(exName) ? 'cardio' : 'superior');
+                
+                // --- AQUI ESTÁ A MÁGICA DA BORDA ROXA ---
+                const isUltimate = ultimateList.includes(exName);
+                const borderClass = isUltimate 
+                    ? 'border-purple-500 border-2 shadow-[0_0_15px_rgba(168,85,247,0.4)]' // Roxo brilhante
+                    : 'border-zinc-800'; // Normal
+                // ----------------------------------------
+
+                return `
+                    <button onclick="app.selectExerciseFromPicker('${escapeHtml(exName)}', '${realType}')" class="flex flex-col gap-2 group active:scale-95 transition-transform text-left">
+                        <div class="aspect-square w-full rounded-2xl overflow-hidden border ${borderClass} group-hover:border-purple-500 transition-colors relative bg-zinc-900">
+                            <img src="${gifUrl}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100" loading="lazy">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                            ${isUltimate ? '<div class="absolute top-2 right-2 w-2 h-2 bg-purple-500 rounded-full shadow-lg shadow-purple-500"></div>' : ''}
+                            <div class="absolute bottom-2 left-2 right-2">
+                                <p class="text-white text-[10px] font-bold leading-tight text-center line-clamp-2">${escapeHtml(exName)}</p>
+                            </div>
+                        </div>
+                    </button>
+                `;
+            }).join('') + `</div>`;
+        }
+        
+        // Re-cria ícones se necessário (para o ícone de triste)
+        lucide.createIcons();
+    }
+
+    // --- NOVO RENDERIZADOR: SELETOR VISUAL DE EXERCÍCIOS (CORRIGIDO FINAL) ---
+    function renderExercisePicker(root) {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 z-[60] bg-black/95 flex flex-col animate-in fade-in duration-200';
+        
+        // Lógica de Filtro
+        let list = [];
+        if (state.pickerFilter === 'todos') {
+            const all = [...exercisesList.cardio, ...exercisesList.inferior, ...exercisesList.superior];
+            list = [...new Set(all)]; 
+        } else {
+            list = exercisesList[state.pickerFilter] || [];
+        }
+
+        // Lógica de Busca
+        if (state.pickerSearch) {
+            const term = state.pickerSearch.toLowerCase();
+            list = list.filter(ex => ex.toLowerCase().includes(term));
+        }
+
+        // Renderiza Grid
         const gridHtml = list.map(exName => {
             const gifUrl = exerciseGifs[exName] || exerciseGifs[exName.replace(' 45°', '')] || exerciseGifs['Outro'];
-            const realType = exercisesList.inferior.includes(exName) ? 'inferior' : 'superior';
+            
+            let realType = 'superior'; 
+            if (exercisesList.inferior.includes(exName)) realType = 'inferior';
+            else if (exercisesList.cardio.includes(exName)) realType = 'cardio';
+
+            const isUltimate = typeof ultimateList !== 'undefined' && ultimateList.includes(exName);
+            // Ajuste na borda: sem sombra, apenas borda sólida
+            const borderClass = isUltimate ? 'border-purple-500 border-2' : 'border-zinc-800';
 
             return `
                 <button onclick="app.selectExerciseFromPicker('${escapeHtml(exName)}', '${realType}')" class="flex flex-col gap-2 group active:scale-95 transition-transform text-left">
-                    <div class="aspect-square w-full rounded-2xl overflow-hidden border border-zinc-800 group-hover:border-purple-500 transition-colors relative bg-zinc-900">
-                        <img src="${gifUrl}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100" loading="lazy">
+                    <div class="aspect-square w-full rounded-2xl overflow-hidden border ${borderClass} group-hover:border-purple-500 transition-colors relative bg-zinc-900">
+                        <img src="${gifUrl}" 
+                             class="w-full h-full object-cover opacity-80 group-hover:opacity-100" 
+                             loading="lazy"
+                             onerror="this.onerror=null; this.src='https://placehold.co/100x100/27272a/FFF?text=IMG';">
+                        
                         <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                        
+                        ${isUltimate ? '<div class="absolute top-2 right-2 w-2 h-2 bg-purple-500 rounded-full"></div>' : ''}
+                        
                         <div class="absolute bottom-2 left-2 right-2">
                             <p class="text-white text-[10px] font-bold leading-tight text-center line-clamp-2">${escapeHtml(exName)}</p>
                         </div>
@@ -1526,38 +1653,28 @@
                     <i data-lucide="arrow-left" class="w-6 h-6"></i>
                 </button>
                 <div class="flex-1 relative">
-                    <i data-lucide="search" class="w-4 h-4 text-zinc-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <i data-lucide="search" class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
                     <input type="text" 
                         value="${escapeHtml(state.pickerSearch)}"
                         oninput="app.setPickerSearch(this.value)" 
-                        placeholder="Buscar exercício..." 
-                        class="w-full bg-black border border-zinc-700 rounded-full py-2.5 pl-10 pr-4 text-sm text-white focus:border-purple-500 outline-none"
-                        autofocus
+                        placeholder="Buscar..." 
+                        class="w-full bg-zinc-800 border border-zinc-700 rounded-full py-2.5 pl-10 pr-4 text-base text-white focus:border-purple-500 outline-none placeholder-zinc-500"
                     >
                 </div>
             </div>
 
             <div class="flex-1 overflow-y-auto custom-scrollbar">
-                
-                <div class="px-4 pt-4 pb-2 grid grid-cols-3 gap-3 sticky top-0 bg-black/95 backdrop-blur-sm z-10">
-                    <button onclick="app.setPickerFilter('inferior')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${state.pickerFilter === 'inferior' ? 'bg-purple-600 text-white border-purple-500' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800'}">
-                        Inferior
-                    </button>
-                    <button onclick="app.setPickerFilter('superior')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${state.pickerFilter === 'superior' ? 'bg-purple-600 text-white border-purple-500' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800'}">
-                        Superior
-                    </button>
-                    <button onclick="app.setPickerFilter('todos')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${state.pickerFilter === 'todos' ? 'bg-purple-600 text-white border-purple-500' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800'}">
-                        Todos
-                    </button>
+                <div class="px-4 pt-4 pb-2 grid grid-cols-4 gap-2 sticky top-0 bg-black/95 backdrop-blur-sm z-10">
+                    <button onclick="app.setPickerFilter('inferior')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${state.pickerFilter === 'inferior' ? 'bg-purple-600 text-white border-purple-500' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800'}">Inferior</button>
+                    <button onclick="app.setPickerFilter('superior')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${state.pickerFilter === 'superior' ? 'bg-purple-600 text-white border-purple-500' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800'}">Superior</button>
+                    <button onclick="app.setPickerFilter('cardio')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${state.pickerFilter === 'cardio' ? 'bg-purple-600 text-white border-purple-500' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800'}">Cardio</button>
+                    <button onclick="app.setPickerFilter('todos')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${state.pickerFilter === 'todos' ? 'bg-purple-600 text-white border-purple-500' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:bg-zinc-800'}">Todos</button>
                 </div>
 
-                <div class="p-4 pt-2">
+                <div id="picker-grid-container" class="p-4 pt-2">
                     ${list.length > 0 
                         ? `<div class="grid grid-cols-3 gap-3 pb-20">${gridHtml}</div>`
-                        : `<div class="text-center text-zinc-500 mt-20 flex flex-col items-center">
-                             <i data-lucide="frown" class="w-10 h-10 mb-2 opacity-50"></i>
-                             <p>Nenhum exercício encontrado</p>
-                           </div>`
+                        : `<div class="text-center text-zinc-500 mt-20 flex flex-col items-center"><i data-lucide="frown" class="w-10 h-10 mb-2 opacity-50"></i><p>Nada encontrado</p></div>`
                     }
                 </div>
             </div>
