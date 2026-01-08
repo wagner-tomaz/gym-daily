@@ -244,6 +244,120 @@
         "Outro": "https://media.forgecdn.net/attachments/627/928/pushup.gif"
       };
 
+      // --- TEXTOS TÉCNICOS E DICAS ---
+    const exerciseDetails = {
+        "Agachamento Livre": {
+            steps: [
+                "Pés na largura dos ombros, pontas levemente para fora.",
+                "Mantenha o peito estufado e o abdômen contraído (bracing).",
+                "Desça jogando o quadril para trás, como se fosse sentar numa cadeira.",
+                "Desça até as coxas ficarem paralelas ao chão (ou mais, se tiver mobilidade).",
+                "Suba empurrando o chão com o calcanhar."
+            ],
+            tips: "Não deixe os joelhos entrarem (valgo) na subida. Respire fundo antes de descer e solte o ar em cima.",
+            muscles: "Quadríceps, Glúteo Máximo, Core."
+        },
+        "Leg Press 45°": {
+            steps: [
+                "Apoie as costas totalmente no banco, sem levantar a lombar.",
+                "Pés na plataforma na largura do quadril.",
+                "Destrave o peso e desça controlando até os joelhos chegarem perto do peito.",
+                "Empurre a plataforma sem esticar totalmente (bloquear) os joelhos no final."
+            ],
+            tips: "Nunca apoie as mãos nos joelhos para ajudar. A força deve vir apenas das pernas.",
+            muscles: "Quadríceps (foco total)."
+        },
+        "Supino Inclinado": {
+            steps: [
+                "Banco inclinado entre 30° e 45°.",
+                "Pés firmes no chão, escápulas retraídas (fechadas atrás).",
+                "Desça os halteres/barra na direção da parte superior do peito.",
+                "Cotovelos devem estar a 45° do corpo (não abertos na linha do ombro)."
+            ],
+            tips: "Foque em esmagar o peitoral superior na subida. Não bata os halteres no topo.",
+            muscles: "Peitoral Superior, Deltoide Anterior, Tríceps."
+        },
+        "Levantamento Terra": {
+            steps: [
+                "Barra colada na canela. Pés na largura do quadril.",
+                "Segure a barra, abaixe o quadril e estufe o peito.",
+                "Tire a folga da barra (faça força antes de subir).",
+                "Suba estendendo joelhos e quadril simultaneamente.",
+                "Termine em pé, com glúteo contraído, sem jogar as costas para trás exageradamente."
+            ],
+            tips: "A coluna deve ficar neutra o tempo todo. Imagine que está empurrando o chão para longe, não puxando a barra.",
+            muscles: "Cadeia Posterior completa (Costas, Glúteo, Posterior, Lombar)."
+        },
+        "Stiff": {
+            steps: [
+                "Pés na largura do quadril, joelhos levemente flexionados (destravados).",
+                "Desça o tronco mantendo a coluna reta, jogando o quadril para trás.",
+                "A barra/halter deve descer rente à perna.",
+                "Desça até sentir o posterior da coxa alongar bem, depois suba contraindo o glúteo."
+            ],
+            tips: "O movimento é de quadril, não de coluna. Não arredonde as costas!",
+            muscles: "Posterior de Coxa, Glúteo."
+        },
+        "Puxada Aberta (Pulldown)": {
+            steps: [
+                "Segure a barra com pegada mais larga que os ombros.",
+                "Incline o tronco levemente para trás e estufe o peito.",
+                "Puxe a barra em direção à parte superior do peito (clavícula).",
+                "Foque em levar os cotovelos para baixo e para trás."
+            ],
+            tips: "Não use o impulso do corpo (gangorra). Imagine que quer encostar os cotovelos nas costelas.",
+            muscles: "Grande Dorsal (Lats), Bíceps."
+        },
+        "Elevação Pélvica": {
+            steps: [
+                "Apoie as escápulas no banco (banco firme).",
+                "Barra sobre o quadril (use a almofada).",
+                "Pés firmes no chão. Suba o quadril contraindo o glúteo no topo.",
+                "No topo, sua canela deve estar vertical (90°)."
+            ],
+            tips: "Olhe para a frente (queixo no peito) o tempo todo, não olhe para o teto. Segure 1s no topo.",
+            muscles: "Glúteo Máximo (Foco total)."
+        },
+        "Rosca Scott": {
+            steps: [
+                "Axilas bem encaixadas no apoio.",
+                "Braços estendidos. Suba a barra/halter até contrair o bíceps.",
+                "Desça controlando bem o movimento (fase excêntrica)."
+            ],
+            tips: "Não tire o quadril do banco para ajudar a puxar. O foco é isolar o bíceps.",
+            muscles: "Bíceps Braquial."
+        },
+        "Tríceps Corda": {
+            steps: [
+                "Corpo levemente inclinado à frente, cotovelos colados na costela.",
+                "Estenda o braço para baixo, abrindo a corda no final do movimento.",
+                "Suba controlando até o antebraço encostar no bíceps."
+            ],
+            tips: "O único movimento é do cotovelo para baixo. O ombro não mexe!",
+            muscles: "Tríceps (Cabeça lateral)."
+        },
+        "Elevação Lateral": {
+            steps: [
+                "Tronco levemente inclinado à frente.",
+                "Suba os halteres até a altura dos ombros.",
+                "Cotovelos levemente flexionados, punhos firmes."
+            ],
+            tips: "Imagine que está despejando uma jarra de água no topo. O cotovelo lidera o movimento.",
+            muscles: "Deltoide Lateral (Ombro)."
+        }
+    };
+
+    // Fallback para exercícios sem descrição ainda
+    const defaultDetails = {
+        steps: [
+            "Execute o movimento de forma controlada.",
+            "Mantenha a postura correta e o abdômen contraído.",
+            "Foque na conexão mente-músculo."
+        ],
+        tips: "Consulte um professor para ajustes finos na sua biomecânica.",
+        muscles: "Musculatura alvo do exercício."
+    };
+
       const missedReasons = [
         "Feriado",
         "Academia fechada",
@@ -509,9 +623,9 @@
           state.showFeaturesModal = !state.showFeaturesModal;
           app.render();
         },
-        openImage: (url) => {
-          state.viewingImage = url;
-          app.render();
+        openImage: (name, url) => {
+            state.viewingImage = { name, url }; // Agora salva um objeto completo
+            app.render();
         },
         closeImage: () => {
           state.viewingImage = null;
@@ -1136,7 +1250,7 @@
                     const mediaHtml = gifUrl
   ? `<img src="${escapeHtml(gifUrl)}" 
           onerror="this.src='https://placehold.co/200x200/27272a/a855f7?text=Erro+no+GIF'"
-          onclick="app.openImage('${escapeHtml(gifUrl)}')" 
+          onclick="app.openImage('${escapeHtml(exName)}', '${escapeHtml(gifUrl)}')"
           class="w-16 h-16 rounded-xl object-cover border border-zinc-700 flex-shrink-0 bg-black cursor-zoom-in hover:opacity-80 transition-opacity">`
   : `<div class="w-16 h-16 rounded-xl bg-zinc-800 flex items-center justify-center flex-shrink-0 text-purple-500 font-bold border border-zinc-700 text-lg">${i + 1}</div>`;
 
@@ -1742,22 +1856,81 @@ Entendi, vamos treinar!
       }
 
       function renderImageModal(root) {
+        // Recupera dados
+        const { name, url } = state.viewingImage;
+        // Busca detalhes ou usa o padrão
+        const details = exerciseDetails[name] || exerciseDetails[name.replace(' 45°', '')] || defaultDetails;
+
         const modal = document.createElement("div");
-        modal.className = "fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 animate-in zoom-in duration-200";
-        modal.onclick = () => app.closeImage();
+        modal.className = "fixed inset-0 z-[100] bg-black/95 flex items-end sm:items-center justify-center sm:p-4 animate-in fade-in duration-200";
+        
+        // Fecha ao clicar fora
+        modal.onclick = (e) => {
+            if(e.target === modal) app.closeImage();
+        };
+
+        const stepsHtml = details.steps.map((step, i) => `
+            <li class="flex items-start gap-3 text-zinc-300 text-sm leading-relaxed">
+                <span class="flex-shrink-0 w-5 h-5 rounded-full bg-zinc-800 text-purple-500 font-bold text-[10px] flex items-center justify-center mt-0.5 border border-zinc-700">${i+1}</span>
+                <span>${step}</span>
+            </li>
+        `).join('');
 
         modal.innerHTML = `
-            <div class="relative max-w-full max-h-full">
-                <button onclick="app.closeImage()" class="absolute -top-12 right-0 p-2 text-white bg-zinc-800 rounded-full">
-                    <i data-lucide="x" class="w-6 h-6"></i>
+            <div class="bg-zinc-950 w-full sm:w-[500px] h-[85vh] sm:h-auto sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col border border-zinc-800 relative">
+                
+                <button onclick="app.closeImage()" class="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black rounded-full text-white backdrop-blur-sm border border-white/10 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
-                <img src="${state.viewingImage}" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl border border-zinc-800 object-contain">
-                <p class="text-zinc-500 text-center mt-4 text-xs font-medium">Toque fora para fechar</p>
+
+                <div class="relative h-64 flex-shrink-0 bg-black rounded-t-3xl overflow-hidden border-b border-zinc-800">
+                    <img src="${url}" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/400x300/27272a/FFF?text=Sem+Imagem'">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-zinc-950 to-transparent h-20"></div>
+                    <div class="absolute bottom-4 left-5 right-5">
+                        <h3 class="text-2xl font-bold text-white shadow-black drop-shadow-md leading-tight">${escapeHtml(name)}</h3>
+                        <p class="text-purple-400 text-xs font-bold uppercase tracking-wider mt-1 flex items-center gap-1">
+                            <i data-lucide="zap" class="w-3 h-3"></i> Técnica Correta
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                    
+                    <div>
+                        <h4 class="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-2">Músculos Alvo</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${details.muscles.split(',').map(m => `
+                                <span class="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 font-medium">
+                                    ${m.trim()}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-3">Execução</h4>
+                        <ul class="space-y-3">
+                            ${stepsHtml}
+                        </ul>
+                    </div>
+
+                    <div class="bg-purple-900/10 border border-purple-500/20 p-4 rounded-xl flex gap-3 items-start">
+                        <i data-lucide="lightbulb" class="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5"></i>
+                        <div>
+                            <h5 class="text-purple-400 font-bold text-xs uppercase mb-1">Dica de Mestre</h5>
+                            <p class="text-zinc-300 text-sm italic">"${details.tips}"</p>
+                        </div>
+                    </div>
+
+                    <button onclick="app.closeImage()" class="w-full py-4 bg-zinc-900 hover:bg-zinc-800 text-white font-bold rounded-xl border border-zinc-800 transition-colors">
+                        Entendi
+                    </button>
+                </div>
             </div>
         `;
         root.appendChild(modal);
         lucide.createIcons();
-      }
+    }
 
       function renderStatsTab(root) {
         // --- CONFIGURAÇÃO VISUAL ---
@@ -1809,124 +1982,71 @@ Entendi, vamos treinar!
             }
         }
 
-        // 2. Desenho do Gráfico
-        let chartContent = '';
+        // --- CÁLCULO DE ESTATÍSTICAS AVANÇADAS (NOVO) ---
+        const allEntries = Object.values(state.gymData);
         
+        // 1. Totais Gerais
+        const totalWorkouts = allEntries.filter(e => e.attended).length;
+        const totalRest = allEntries.filter(e => e.status === 'rest').length;
+        const totalMissed = allEntries.filter(e => e.status === 'missed').length;
+
+        // 2. Tipos de Treino (Contagem)
+        const countInferior = allEntries.filter(e => e.attended && e.workoutType === 'inferior').length;
+        const countSuperior = allEntries.filter(e => e.attended && e.workoutType === 'superior').length;
+        const countCardio = allEntries.filter(e => e.attended && e.workoutType === 'cardio').length;
+
+        // 3. Peso Atual Real (Busca o último registro válido no histórico)
+        let currentWeight = '--';
+        // Ordena datas para garantir que pegamos o último
+        const sortedDates = Object.keys(state.gymData).sort();
+        for (let i = sortedDates.length - 1; i >= 0; i--) {
+            const entry = state.gymData[sortedDates[i]];
+            if (entry.weight && parseFloat(entry.weight) > 0) {
+                currentWeight = entry.weight;
+                break; // Achou o mais recente, para
+            }
+        }
+
+        // --- DESENHO DO GRÁFICO (MANTIDO IGUAL) ---
+        let chartContent = '';
         if (state.statsMetric === 'weight') {
             const cleanData = dataPoints.filter(n => n !== null);
-            
             if (cleanData.length < 1) {
-                chartContent = `
-                    <div class="h-64 flex flex-col items-center justify-center text-zinc-600 bg-zinc-900 rounded-2xl border border-zinc-800">
-                        <i data-lucide="activity" class="w-8 h-8 mb-3 opacity-30"></i>
-                        <p class="text-xs font-medium">Sem dados neste período</p>
-                    </div>
-                `;
+                chartContent = `<div class="h-64 flex flex-col items-center justify-center text-zinc-600 bg-zinc-900 rounded-2xl border border-zinc-800"><i data-lucide="activity" class="w-8 h-8 mb-3 opacity-30"></i><p class="text-xs font-medium">Sem dados neste período</p></div>`;
             } else {
                 let min = Math.min(...cleanData);
                 let max = Math.max(...cleanData);
                 if (min === max) { min -= 5; max += 5; }
                 const padding = (max - min) * 0.2;
-                min -= padding;
-                max += padding;
+                min -= padding; max += padding;
                 const range = max - min;
-
-                let pathD = '';
-                let areaPathD = '';
-                let pointsHtml = '';
+                let pathD = ''; let areaPathD = ''; let pointsHtml = '';
                 const stepX = 100 / (dataPoints.length - 1);
                 let hasStarted = false;
-
                 dataPoints.forEach((val, i) => {
                     if (val !== null) {
                         const x = i * stepX;
                         const y = 100 - ((val - min) / range) * 100;
-                        
-                        if (!hasStarted) {
-                            pathD += `M ${x} ${y}`;
-                            areaPathD += `M ${x} ${100} L ${x} ${y}`;
-                            hasStarted = true;
-                        } else {
-                            pathD += ` L ${x} ${y}`;
-                            areaPathD += ` L ${x} ${y}`;
-                        }
-
-                        // Bolinhas (Agora sem sombra, apenas borda sólida)
-                        pointsHtml += `
-                            <div class="absolute w-3 h-3 bg-zinc-900 border-2 border-purple-600 rounded-full hover:scale-125 transition-transform cursor-pointer group" 
-                                 style="left: ${x}%; top: ${y}%; transform: translate(-50%, -50%);">
-                                 <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-zinc-800 border border-zinc-700 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                                    ${val.toFixed(1)}kg
-                                 </div>
-                            </div>
-                        `;
+                        if (!hasStarted) { pathD += `M ${x} ${y}`; areaPathD += `M ${x} ${100} L ${x} ${y}`; hasStarted = true; } 
+                        else { pathD += ` L ${x} ${y}`; areaPathD += ` L ${x} ${y}`; }
+                        pointsHtml += `<div class="absolute w-3 h-3 bg-zinc-900 border-2 border-purple-600 rounded-full hover:scale-125 transition-transform cursor-pointer group" style="left: ${x}%; top: ${y}%; transform: translate(-50%, -50%);"><div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-zinc-800 border border-zinc-700 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">${val.toFixed(1)}kg</div></div>`;
                     }
                 });
-
-                if (hasStarted) {
-                    const lastValidIndex = dataPoints.findLastIndex(v => v !== null);
-                    const lastXValid = lastValidIndex * stepX;
-                    areaPathD += ` L ${lastXValid} 100 Z`; 
-                }
-
-                chartContent = `
-                    <div class="relative h-64 w-full select-none bg-zinc-900 rounded-2xl border border-zinc-800 p-4">
-                        <div class="absolute inset-0 flex flex-col justify-between text-[10px] text-zinc-600 font-mono py-6 px-4">
-                            <div class="border-b border-zinc-800/50 w-full text-right pr-1">${max.toFixed(0)}</div>
-                            <div class="border-b border-zinc-800/50 w-full text-right pr-1">${(min + range*0.5).toFixed(0)}</div>
-                            <div class="border-b border-zinc-800/50 w-full text-right pr-1">${min.toFixed(0)}</div>
-                        </div>
-
-                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="absolute inset-0 w-full h-full overflow-visible p-4">
-                            <defs>
-                                <linearGradient id="gradientArea" x1="0" x2="0" y1="0" y2="1">
-                                    <stop offset="0%" stop-color="${BRAND_COLOR}" stop-opacity="0.3" />
-                                    <stop offset="100%" stop-color="${BRAND_COLOR}" stop-opacity="0" />
-                                </linearGradient>
-                            </defs>
-                            <path d="${areaPathD}" fill="url(#gradientArea)" stroke="none" />
-                            <path d="${pathD}" fill="none" stroke="${BRAND_COLOR}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
-                        </svg>
-
-                        <div class="absolute inset-0 p-4">
-                            ${pointsHtml}
-                        </div>
-                        
-                        <div class="absolute bottom-1 left-4 right-4 flex justify-between">
-                            ${labels.map((l) => `
-                                <div style="width: ${100/labels.length}%; text-align: center;" class="text-[9px] text-zinc-500 truncate">
-                                    ${l}
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
+                if (hasStarted) { const lastValidIndex = dataPoints.findLastIndex(v => v !== null); areaPathD += ` L ${lastValidIndex * stepX} 100 Z`; }
+                chartContent = `<div class="relative h-64 w-full select-none bg-zinc-900 rounded-2xl border border-zinc-800 p-4"><div class="absolute inset-0 flex flex-col justify-between text-[10px] text-zinc-600 font-mono py-6 px-4"><div class="border-b border-zinc-800/50 w-full text-right pr-1">${max.toFixed(0)}</div><div class="border-b border-zinc-800/50 w-full text-right pr-1">${(min + range*0.5).toFixed(0)}</div><div class="border-b border-zinc-800/50 w-full text-right pr-1">${min.toFixed(0)}</div></div><svg viewBox="0 0 100 100" preserveAspectRatio="none" class="absolute inset-0 w-full h-full overflow-visible p-4"><defs><linearGradient id="gradientArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="${BRAND_COLOR}" stop-opacity="0.3" /><stop offset="100%" stop-color="${BRAND_COLOR}" stop-opacity="0" /></linearGradient></defs><path d="${areaPathD}" fill="url(#gradientArea)" stroke="none" /><path d="${pathD}" fill="none" stroke="${BRAND_COLOR}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" /></svg><div class="absolute inset-0 p-4">${pointsHtml}</div><div class="absolute bottom-1 left-4 right-4 flex justify-between">${labels.map(l => `<div style="width: ${100/labels.length}%; text-align: center;" class="text-[9px] text-zinc-500 truncate">${l}</div>`).join('')}</div></div>`;
             }
         } else {
-            // GRÁFICO DE BARRAS (FREQUÊNCIA)
             const maxVal = Math.max(...dataPoints, 5);
             const bars = dataPoints.map((val, i) => {
                 const height = (val / maxVal) * 100;
-                // Barra sólida, sem sombra
                 const bgClass = val > 0 ? 'bg-purple-600' : 'bg-zinc-800';
-                
-                return `
-                    <div class="flex-1 flex flex-col items-center justify-end group gap-1 h-full">
-                        <div class="w-full mx-0.5 rounded-t-sm ${bgClass} transition-all relative" style="height: ${height}%"></div>
-                        <span class="text-[8px] text-zinc-500 truncate w-full text-center h-3 -mb-1">${labels[i]}</span>
-                    </div>
-                `;
+                return `<div class="flex-1 flex flex-col items-center justify-end group gap-1 h-full"><div class="w-full mx-0.5 rounded-t-sm ${bgClass} transition-all relative" style="height: ${height}%"></div><span class="text-[8px] text-zinc-500 truncate w-full text-center h-3 -mb-1">${labels[i]}</span></div>`;
             }).join('');
-
-            chartContent = `
-                <div class="h-64 w-full bg-zinc-900 rounded-2xl border border-zinc-800 p-4 pt-8 flex items-end pb-6">
-                    ${bars}
-                </div>
-            `;
+            chartContent = `<div class="h-64 w-full bg-zinc-900 rounded-2xl border border-zinc-800 p-4 pt-8 flex items-end pb-6">${bars}</div>`;
         }
 
         root.innerHTML = `
-            <div class="mb-6 pt-2">
+            <div class="mb-6 pt-2 px-1">
                 <h1 class="text-2xl font-bold text-white mb-1 flex items-center gap-2">
                     <i data-lucide="trending-up" class="text-purple-600"></i> Evolução
                 </h1>
@@ -1934,35 +2054,76 @@ Entendi, vamos treinar!
             </div>
 
             <div class="bg-zinc-900 p-1 rounded-xl flex gap-1 mb-4 border border-zinc-800">
-                <button onclick="state.statsMetric='weight'; app.render()" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all ${state.statsMetric === 'weight' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}">
-                    Peso Corporal
-                </button>
-                <button onclick="state.statsMetric='frequency'; app.render()" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all ${state.statsMetric === 'frequency' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}">
-                    Frequência
-                </button>
+                <button onclick="state.statsMetric='weight'; app.render()" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all ${state.statsMetric === 'weight' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}">Peso Corporal</button>
+                <button onclick="state.statsMetric='frequency'; app.render()" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all ${state.statsMetric === 'frequency' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}">Frequência</button>
             </div>
 
             ${chartContent}
 
-            <div class="grid grid-cols-3 gap-2 mt-4 mb-4">
+            <div class="grid grid-cols-3 gap-2 mt-4 mb-6">
                 <button onclick="state.statsPeriod='week'; app.render()" class="py-3 rounded-xl text-xs font-bold border transition-colors ${state.statsPeriod === 'week' ? 'bg-purple-600 text-white border-purple-600' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'}">Semana</button>
                 <button onclick="state.statsPeriod='month'; app.render()" class="py-3 rounded-xl text-xs font-bold border transition-colors ${state.statsPeriod === 'month' ? 'bg-purple-600 text-white border-purple-600' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'}">Mês</button>
                 <button onclick="state.statsPeriod='year'; app.render()" class="py-3 rounded-xl text-xs font-bold border transition-colors ${state.statsPeriod === 'year' ? 'bg-purple-600 text-white border-purple-600' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'}">Ano</button>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-3 mb-3">
                 <div class="bg-zinc-900 p-4 rounded-2xl border border-zinc-800">
                     <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-wider">Total Treinos</p>
-                    <p class="text-2xl font-black text-white mt-1 tracking-tight">
-                        ${Object.values(state.gymData).filter(x => x.attended).length}
-                    </p>
+                    <p class="text-2xl font-black text-white mt-1 tracking-tight">${totalWorkouts}</p>
                 </div>
-                
                 <div class="bg-zinc-900 p-4 rounded-2xl border border-zinc-800">
                     <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-wider">Peso Atual</p>
                     <p class="text-2xl font-black text-white mt-1 tracking-tight">
-                        ${state.weight || '--'} <span class="text-sm font-medium text-zinc-600">kg</span>
+                        ${currentWeight} <span class="text-sm font-medium text-zinc-600">kg</span>
                     </p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 mb-3">
+                <div class="bg-zinc-900 p-3 rounded-2xl border border-zinc-800 text-center">
+                    <p class="text-green-500 text-lg font-black">${totalWorkouts}</p>
+                    <p class="text-zinc-500 text-[9px] uppercase font-bold">Treinos</p>
+                </div>
+                <div class="bg-zinc-900 p-3 rounded-2xl border border-zinc-800 text-center">
+                    <p class="text-blue-500 text-lg font-black">${totalRest}</p>
+                    <p class="text-zinc-500 text-[9px] uppercase font-bold">Descansos</p>
+                </div>
+                <div class="bg-zinc-900 p-3 rounded-2xl border border-zinc-800 text-center">
+                    <p class="text-red-500 text-lg font-black">${totalMissed}</p>
+                    <p class="text-zinc-500 text-[9px] uppercase font-bold">Faltas</p>
+                </div>
+            </div>
+
+            <div class="bg-zinc-900 rounded-2xl border border-zinc-800 p-4 mb-20">
+                <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-3">Divisão dos Treinos</p>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs font-bold text-zinc-300 mb-1">
+                            <span>Inferior (Pernas)</span>
+                            <span>${countInferior}</span>
+                        </div>
+                        <div class="w-full bg-zinc-800 rounded-full h-2">
+                            <div class="bg-purple-600 h-2 rounded-full" style="width: ${totalWorkouts ? (countInferior/totalWorkouts)*100 : 0}%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-bold text-zinc-300 mb-1">
+                            <span>Superior (Braços/Costas)</span>
+                            <span>${countSuperior}</span>
+                        </div>
+                        <div class="w-full bg-zinc-800 rounded-full h-2">
+                            <div class="bg-purple-600 h-2 rounded-full" style="width: ${totalWorkouts ? (countSuperior/totalWorkouts)*100 : 0}%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs font-bold text-zinc-300 mb-1">
+                            <span>Cardio</span>
+                            <span>${countCardio}</span>
+                        </div>
+                        <div class="w-full bg-zinc-800 rounded-full h-2">
+                            <div class="bg-purple-600 h-2 rounded-full" style="width: ${totalWorkouts ? (countCardio/totalWorkouts)*100 : 0}%"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
