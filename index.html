@@ -258,7 +258,7 @@
 
         // CONTROLE DE UI
         showExercisePicker: false,
-        pickerFilter: "inferior",
+        pickerFilter: "todos",
         pickerSearch: "",
         editingIndex: null,
         pickerContext: "routine",
@@ -975,7 +975,7 @@
         openPicker: (index = null, context = "routine") => {
           state.editingIndex = index;
           state.pickerContext = context;
-          state.pickerFilter = "inferior";
+          state.pickerFilter = "todos";
           state.pickerSearch = "";
           state.showExercisePicker = true;
           app.render();
@@ -1710,122 +1710,277 @@
           "fixed inset-0 flex items-center justify-center p-4 z-50";
         modal.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
         modal.style.backdropFilter = "blur(4px)";
+
         let content = "";
 
+        // MODO SELEÇÃO (Escolher o que fez no dia)
         if (state.modalMode === "select") {
-          content = `<h3 class="text-lg font-bold text-white text-center mb-6">Como foi hoje?</h3><div class="flex flex-col gap-3"><button onclick="app.setModalMode('attended')" class="bg-status-success hover:bg-green-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-transform active:scale-95"><i data-lucide="check-circle-2" class="w-6 h-6"></i> Treinei!</button><button onclick="app.setModalMode('rest')" class="bg-status-info hover:bg-blue-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-transform active:scale-95"><i data-lucide="coffee" class="w-6 h-6"></i> Descansei</button><button onclick="app.setModalMode('missed')" class="bg-status-danger hover:bg-red-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-transform active:scale-95"><i data-lucide="x-circle" class="w-6 h-6"></i> Faltei</button></div>`;
+          content = `
+            <h3 class="text-lg font-bold text-white text-center mb-6">Como foi hoje?</h3>
+            <div class="flex flex-col gap-3">
+                <button onclick="app.setModalMode('attended')" class="bg-status-success hover:bg-green-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-transform active:scale-95 shadow-lg">
+                    <i data-lucide="check-circle-2" class="w-6 h-6"></i> Treinei!
+                </button>
+                <button onclick="app.setModalMode('rest')" class="bg-status-info hover:bg-blue-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-transform active:scale-95 shadow-lg">
+                    <i data-lucide="coffee" class="w-6 h-6"></i> Descansei
+                </button>
+                <button onclick="app.setModalMode('missed')" class="bg-status-danger hover:bg-red-700 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 transition-transform active:scale-95 shadow-lg">
+                    <i data-lucide="x-circle" class="w-6 h-6"></i> Faltei
+                </button>
+            </div>`;
+
+          // MODO TREINO REALIZADO (Aqui estava o erro provável)
         } else if (state.modalMode === "attended") {
+          // Gera a lista de exercícios
           const exHtml = state.exercises
             .map((ex, i) => {
               const gifUrl = exerciseGifs[ex.name] || exerciseGifs["Outro"];
-              return `<div class="p-3 rounded-2xl bg-surface border border-bordercol mb-3 relative group">
+              // Garante que valores null virem string vazia
+              const sets = ex.sets || "";
+              const reps = ex.reps || "";
+              const weight = ex.weight || "";
+              const displayTitle =
+                ex.name === "Outro"
+                  ? ex.customName || "Personalizado"
+                  : ex.name;
+
+              return `
+            <div class="p-3 rounded-2xl bg-inputbg border border-bordercol mb-3 relative group">
               <div class="flex items-start gap-3 mb-3">
-                <div onclick="app.openPicker(${i}, 'log')" class="w-14 h-14 shrink-0 rounded-xl bg-inputbg border border-bordercol overflow-hidden relative cursor-pointer hover:border-brand transition-colors"><img src="${gifUrl}" class="w-full h-full object-cover opacity-80" onerror="this.src='https://placehold.co/100x100/27272a/FFF?text=IMG'"><div class="absolute inset-0 flex items-center justify-center bg-black/30"><i data-lucide="refresh-cw" class="w-4 h-4 text-white opacity-70"></i></div></div>
-                <div class="flex-1 min-w-0"><div class="flex justify-between items-start"><div onclick="app.openPicker(${i}, 'log')" class="cursor-pointer"><span class="text-[10px] font-bold text-status-success uppercase tracking-wider block mb-0.5">Feito ${
-                i + 1
-              }</span><h4 class="text-txt-main font-bold text-sm truncate leading-tight">${escapeHtml(
-                ex.name || "Selecionar..."
-              )}</h4></div><div class="flex items-center gap-1 -mr-2"><button onclick="app.moveExercise(${i}, -1)" class="p-1 rounded text-txt-dim hover:text-white hover:bg-bordercol"><i data-lucide="arrow-up" class="w-4 h-4"></i></button><button onclick="app.moveExercise(${i}, 1)" class="p-1 rounded text-txt-dim hover:text-white hover:bg-bordercol"><i data-lucide="arrow-down" class="w-4 h-4"></i></button><div class="w-px h-3 bg-bordercol mx-1"></div><button onclick="app.removeExercise(${i})" class="text-status-danger/40 hover:text-status-danger p-1 rounded hover:bg-status-danger-faint"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div></div>
+                <div onclick="app.openPicker(${i}, 'log')" class="w-14 h-14 shrink-0 rounded-xl bg-surface border border-bordercol overflow-hidden relative cursor-pointer hover:border-brand transition-colors">
+                    <img src="${gifUrl}" class="w-full h-full object-cover opacity-80" onerror="this.src='https://placehold.co/100x100/27272a/FFF?text=IMG'">
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 text-white drop-shadow-md"></i>
+                    </div>
+                </div>
+                
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start">
+                        <div onclick="app.openPicker(${i}, 'log')" class="cursor-pointer">
+                            <span class="text-[10px] font-bold text-status-success uppercase tracking-wider block mb-0.5">Feito ${
+                              i + 1
+                            }</span>
+                            <h4 class="text-txt-main font-bold text-sm truncate leading-tight">${escapeHtml(
+                              displayTitle
+                            )}</h4>
+                        </div>
+                        <div class="flex items-center gap-1 -mr-2">
+                            <button onclick="app.moveExercise(${i}, -1)" class="p-1 rounded text-txt-dim hover:text-brand hover:bg-bordercol"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+                            <button onclick="app.moveExercise(${i}, 1)" class="p-1 rounded text-txt-dim hover:text-brand hover:bg-bordercol"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
+                            <div class="w-px h-3 bg-bordercol mx-1"></div>
+                            <button onclick="app.removeExercise(${i})" class="text-status-danger/60 hover:text-status-danger p-1 rounded hover:bg-status-danger/10"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                </div>
               </div>
+              
               <div class="grid grid-cols-3 gap-2">
-                <div class="relative"><input type="number" value="${escapeHtml(
-                  ex.sets
-                )}" oninput="app.updateExercise(${i}, 'sets', this.value)" class="w-full p-2.5 rounded-lg bg-inputbg border border-bordercol text-txt-main text-center focus:border-status-info outline-none font-bold text-sm" placeholder="0"><span class="absolute top-[-6px] left-1/2 -translate-x-1/2 text-[8px] font-bold text-status-info bg-surface px-1 uppercase">Séries</span></div>
-                <div class="relative"><input type="number" value="${escapeHtml(
-                  ex.reps
-                )}" oninput="app.updateExercise(${i}, 'reps', this.value)" class="w-full p-2.5 rounded-lg bg-inputbg border border-bordercol text-txt-main text-center focus:border-status-success outline-none font-bold text-sm" placeholder="0"><span class="absolute top-[-6px] left-1/2 -translate-x-1/2 text-[8px] font-bold text-status-success bg-surface px-1 uppercase">Reps</span></div>
-                <div class="relative"><input type="number" value="${escapeHtml(
-                  ex.weight
-                )}" oninput="app.updateExercise(${i}, 'weight', this.value)" class="w-full p-2.5 rounded-lg bg-inputbg border border-bordercol text-txt-main text-center focus:border-yellow-500 outline-none font-bold text-sm" placeholder="-"><span class="absolute top-[-6px] left-1/2 -translate-x-1/2 text-[8px] font-bold text-yellow-600 bg-surface px-1 uppercase">Carga</span></div>
+                <div class="relative">
+                    <input type="number" value="${sets}" oninput="app.updateExercise(${i}, 'sets', this.value)" class="w-full p-2.5 rounded-lg bg-surface border border-bordercol text-txt-main text-center focus:border-status-info outline-none font-bold text-sm" placeholder="0">
+                    <span class="absolute top-[-6px] left-1/2 -translate-x-1/2 text-[8px] font-bold text-status-info bg-inputbg px-1 uppercase border border-bordercol rounded-full">Séries</span>
+                </div>
+                <div class="relative">
+                    <input type="number" value="${reps}" oninput="app.updateExercise(${i}, 'reps', this.value)" class="w-full p-2.5 rounded-lg bg-surface border border-bordercol text-txt-main text-center focus:border-status-success outline-none font-bold text-sm" placeholder="0">
+                    <span class="absolute top-[-6px] left-1/2 -translate-x-1/2 text-[8px] font-bold text-status-success bg-inputbg px-1 uppercase border border-bordercol rounded-full">Reps</span>
+                </div>
+                <div class="relative">
+                    <input type="number" value="${weight}" oninput="app.updateExercise(${i}, 'weight', this.value)" class="w-full p-2.5 rounded-lg bg-surface border border-bordercol text-txt-main text-center focus:border-brand outline-none font-bold text-sm" placeholder="-">
+                    <span class="absolute top-[-6px] left-1/2 -translate-x-1/2 text-[8px] font-bold text-brand bg-inputbg px-1 uppercase border border-bordercol rounded-full">Carga</span>
+                </div>
               </div>
             </div>`;
             })
             .join("");
 
-          content = `<div class="space-y-5">
-            ${
-              state.routines.length > 0
-                ? `<div class="bg-surface p-3 rounded-xl border border-bordercol"><label class="block text-xs font-bold text-txt-dim mb-2 uppercase">Preencher com Ficha</label><select onchange="app.loadRoutineIntoSession(this.value)" class="w-full p-2.5 rounded-lg bg-inputbg border border-bordercol text-txt-main text-sm outline-none focus:border-brand"><option value="">Selecione...</option>${state.routines
-                    .map(
-                      (r) =>
-                        `<option value="${r.id}">${escapeHtml(r.name)}</option>`
-                    )
-                    .join("")}</select></div>`
-                : ""
-            }
-            <div class="grid grid-cols-2 gap-4">
-              <div><label class="block text-xs font-bold text-txt-dim mb-1.5 uppercase">Tipo</label><select onchange="app.updateForm('workoutType', this.value)" class="w-full p-3 rounded-xl bg-surface border border-bordercol text-txt-main focus:border-brand outline-none"><option value="">Selecione...</option><option value="cardio" ${
-                state.workoutType === "cardio" ? "selected" : ""
-              }>Cardio</option><option value="inferior" ${
-            state.workoutType === "inferior" ? "selected" : ""
-          }>Inferior</option><option value="superior" ${
-            state.workoutType === "superior" ? "selected" : ""
-          }>Superior</option><option value="mesclado" ${
-            state.workoutType === "mesclado" ? "selected" : ""
-          }>Mesclado</option></select></div>
-              <div><label class="block text-xs font-bold text-txt-dim mb-1.5 uppercase">Peso (kg)</label><input type="number" step="0.1" value="${escapeHtml(
-                state.weight
-              )}" oninput="app.updateForm('weight', this.value)" class="w-full p-3 rounded-xl bg-surface border border-bordercol text-txt-main focus:border-brand outline-none" placeholder="Peso atual"></div>
-            </div>
-            ${
-              state.workoutType
-                ? `<div class="flex justify-between items-center pt-2"><label class="text-sm font-bold text-txt-main">Exercícios Realizados</label><button onclick="app.openPicker(null, 'log')" class="flex items-center gap-2 bg-brand hover:bg-brand-hover text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95"><i data-lucide="plus" class="w-3 h-3"></i> Adicionar</button></div><div class="max-h-[40vh] overflow-y-auto pr-1 custom-scrollbar">${exHtml}${
-                    state.exercises.length === 0
-                      ? `<div class="text-center py-8 text-txt-dim text-xs italic">Nenhum exercício adicionado.</div>`
-                      : ""
-                  }</div>`
-                : ""
-            }
-            <div><label class="block text-xs font-bold text-txt-dim mb-1.5 uppercase">Observações</label><textarea oninput="app.updateForm('notes', this.value)" class="w-full p-3 rounded-xl bg-surface border border-bordercol text-txt-main focus:border-brand outline-none" rows="2" placeholder="Como foi o treino?">${escapeHtml(
-              state.notes
-            )}</textarea></div>
-            <button onclick="app.saveData('attended')" class="w-full bg-status-success hover:bg-green-700 text-white py-4 rounded-xl font-bold transition-transform active:scale-95">Concluir Treino</button>
-            ${
-              state.gymData[state.selectedDay.dateKey]
-                ? `<button onclick="app.deleteEntry()" class="w-full text-status-danger font-semibold py-2 text-sm">Excluir Registro</button>`
-                : ""
-            }
-          </div>`;
-        } else if (state.modalMode === "rest") {
-          content = `<div class="text-center py-6"><div class="w-20 h-20 bg-status-info-faint rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="coffee" class="w-10 h-10 text-status-info"></i></div><h3 class="text-xl font-bold text-white mb-2">Dia de Descanso</h3><p class="text-txt-dim text-sm mb-6">O descanso é essencial.</p><div class="mb-6 text-left"><label class="block text-xs font-bold text-txt-dim mb-1.5 uppercase">Observação</label><textarea oninput="app.updateForm('notes', this.value)" class="w-full p-3 rounded-xl bg-surface border border-bordercol text-txt-main focus:border-status-info outline-none" rows="2">${escapeHtml(
-            state.notes
-          )}</textarea></div><button onclick="app.saveData('rest')" class="w-full bg-status-info hover:bg-blue-600 text-white py-4 rounded-xl font-bold">Confirmar Descanso</button>${
-            state.gymData[state.selectedDay.dateKey]
-              ? `<button onclick="app.deleteEntry()" class="w-full text-status-danger font-semibold py-3 mt-2">Excluir Registro</button>`
-              : ""
-          }</div>`;
-        } else {
-          content = `<div class="space-y-4"><label class="block text-xs font-bold text-txt-dim mb-2 uppercase">Motivo</label><div class="space-y-2">${missedReasons
-            .map(
-              (r) =>
-                `<label class="flex items-center p-4 border border-bordercol rounded-xl cursor-pointer bg-surface hover:bg-bordercol transition-colors ${
-                  state.missedReason === r
-                    ? "border-status-danger bg-status-danger-faint"
+          content = `
+            <div class="space-y-5">
+                ${
+                  state.routines.length > 0
+                    ? `
+                <div class="bg-inputbg p-3 rounded-xl border border-bordercol">
+                    <label class="block text-xs font-bold text-txt-dim mb-2 uppercase tracking-wider">Preencher com Ficha</label>
+                    <div class="relative">
+                        <select onchange="app.loadRoutineIntoSession(this.value)" class="w-full p-3 pl-10 rounded-lg bg-surface border border-bordercol text-txt-main text-sm outline-none focus:border-brand appearance-none cursor-pointer font-medium">
+                            <option value="">Selecione uma ficha...</option>
+                            ${state.routines
+                              .map(
+                                (r) =>
+                                  `<option value="${r.id}">${escapeHtml(
+                                    r.name
+                                  )}</option>`
+                              )
+                              .join("")}
+                        </select>
+                        <i data-lucide="clipboard-list" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand"></i>
+                        <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-txt-dim"></i>
+                    </div>
+                </div>`
                     : ""
-                }"><input type="radio" name="reason" value="${escapeHtml(r)}" ${
-                  state.missedReason === r ? "checked" : ""
-                } onchange="app.updateForm('missedReason', this.value)" class="mr-3 w-5 h-5 accent-red-600"><span class="text-txt-main text-sm font-medium">${escapeHtml(
-                  r
-                )}</span></label>`
-            )
-            .join("")}</div>${
-            state.missedReason === "Outro"
-              ? `<textarea oninput="app.updateForm('customReason', this.value)" class="w-full p-3 rounded-xl bg-surface border border-bordercol text-txt-main focus:border-status-danger outline-none" placeholder="Motivo...">${escapeHtml(
-                  state.customReason
-                )}</textarea>`
-              : ""
-          }<button onclick="app.saveData('missed')" class="w-full bg-status-danger hover:bg-red-600 text-white py-4 rounded-xl font-bold mt-4">Confirmar Falta</button>${
-            state.gymData[state.selectedDay.dateKey]
-              ? `<button onclick="app.deleteEntry()" class="w-full text-status-danger font-semibold py-2">Excluir Registro</button>`
-              : ""
-          }</div>`;
+                }
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold text-txt-dim mb-1.5 uppercase">Tipo</label>
+                    <div class="relative">
+                        <select onchange="app.updateForm('workoutType', this.value)" class="w-full p-3 rounded-xl bg-inputbg border border-bordercol text-txt-main focus:border-brand outline-none appearance-none font-medium">
+                            <option value="">Selecione...</option>
+                            <option value="cardio" ${
+                              state.workoutType === "cardio" ? "selected" : ""
+                            }>Cardio</option>
+                            <option value="inferior" ${
+                              state.workoutType === "inferior" ? "selected" : ""
+                            }>Inferior</option>
+                            <option value="superior" ${
+                              state.workoutType === "superior" ? "selected" : ""
+                            }>Superior</option>
+                            <option value="mesclado" ${
+                              state.workoutType === "mesclado" ? "selected" : ""
+                            }>Mesclado</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-txt-dim"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-txt-dim mb-1.5 uppercase">Peso (kg)</label>
+                    <input type="number" step="0.1" value="${escapeHtml(
+                      state.weight
+                    )}" oninput="app.updateForm('weight', this.value)" class="w-full p-3 rounded-xl bg-inputbg border border-bordercol text-txt-main focus:border-brand outline-none font-medium" placeholder="Ex: 70.5">
+                  </div>
+                </div>
+                
+                ${
+                  state.workoutType
+                    ? `
+                <div class="pt-2">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="text-sm font-bold text-txt-main flex items-center gap-2"><i data-lucide="dumbbell" class="w-4 h-4 text-brand"></i> Exercícios</label>
+                        <button onclick="app.openPicker(null, 'log')" class="flex items-center gap-2 bg-brand/10 hover:bg-brand/20 text-brand border border-brand/20 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors">
+                            <i data-lucide="plus" class="w-3 h-3"></i> Adicionar
+                        </button>
+                    </div>
+                    <div class="max-h-[40vh] overflow-y-auto pr-1 custom-scrollbar">
+                        ${exHtml}
+                        ${
+                          state.exercises.length === 0
+                            ? `<div class="text-center py-8 text-txt-dim text-xs italic border-2 border-dashed border-bordercol rounded-xl">Nenhum exercício adicionado.</div>`
+                            : ""
+                        }
+                    </div>
+                </div>`
+                    : ""
+                }
+                
+                <div>
+                    <label class="block text-xs font-bold text-txt-dim mb-1.5 uppercase">Observações</label>
+                    <textarea oninput="app.updateForm('notes', this.value)" class="w-full p-3 rounded-xl bg-inputbg border border-bordercol text-txt-main focus:border-brand outline-none" rows="2" placeholder="Como foi o treino?">${escapeHtml(
+                      state.notes
+                    )}</textarea>
+                </div>
+                
+                <button onclick="app.saveData('attended')" class="w-full bg-status-success hover:bg-green-700 text-white py-4 rounded-xl font-bold shadow-lg transition-transform active:scale-[0.98]">
+                    Concluir Treino
+                </button>
+                
+                ${
+                  state.gymData[state.selectedDay.dateKey]
+                    ? `
+                    <button onclick="app.deleteEntry()" class="w-full py-3 text-status-danger font-bold text-sm bg-status-danger/5 hover:bg-status-danger/10 rounded-xl border border-status-danger/20 transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Excluir Registro
+                    </button>`
+                    : ""
+                }
+            </div>`;
+
+          // MODO DESCANSO
+        } else if (state.modalMode === "rest") {
+          content = `
+            <div class="text-center py-6">
+                <div class="w-20 h-20 bg-status-info/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-status-info/20">
+                    <i data-lucide="coffee" class="w-10 h-10 text-status-info"></i>
+                </div>
+                <h3 class="text-xl font-bold text-txt-main mb-2">Dia de Descanso</h3>
+                <p class="text-txt-dim text-sm mb-6">O descanso é essencial para o crescimento.</p>
+                <div class="mb-6 text-left">
+                    <label class="block text-xs font-bold text-txt-dim mb-1.5 uppercase">Observação</label>
+                    <textarea oninput="app.updateForm('notes', this.value)" class="w-full p-3 rounded-xl bg-inputbg border border-bordercol text-txt-main focus:border-status-info outline-none" rows="2">${escapeHtml(
+                      state.notes
+                    )}</textarea>
+                </div>
+                <button onclick="app.saveData('rest')" class="w-full bg-status-info hover:bg-blue-600 text-white py-4 rounded-xl font-bold transition-transform active:scale-[0.98]">
+                    Confirmar Descanso
+                </button>
+                ${
+                  state.gymData[state.selectedDay.dateKey]
+                    ? `<button onclick="app.deleteEntry()" class="w-full text-status-danger font-bold text-sm py-3 mt-2">Excluir Registro</button>`
+                    : ""
+                }
+            </div>`;
+
+          // MODO FALTA
+        } else {
+          content = `
+            <div class="space-y-4">
+                <label class="block text-xs font-bold text-txt-dim mb-2 uppercase">Motivo da Falta</label>
+                <div class="space-y-2">
+                    ${missedReasons
+                      .map(
+                        (r) => `
+                        <label class="flex items-center p-4 border border-bordercol rounded-xl cursor-pointer bg-inputbg hover:bg-bordercol/50 transition-colors ${
+                          state.missedReason === r
+                            ? "border-status-danger bg-status-danger/10"
+                            : ""
+                        }">
+                            <input type="radio" name="reason" value="${escapeHtml(
+                              r
+                            )}" ${
+                          state.missedReason === r ? "checked" : ""
+                        } onchange="app.updateForm('missedReason', this.value)" class="mr-3 w-5 h-5 accent-red-600">
+                            <span class="text-txt-main text-sm font-medium">${escapeHtml(
+                              r
+                            )}</span>
+                        </label>
+                    `
+                      )
+                      .join("")}
+                </div>
+                ${
+                  state.missedReason === "Outro"
+                    ? `
+                    <textarea oninput="app.updateForm('customReason', this.value)" class="w-full p-3 rounded-xl bg-inputbg border border-bordercol text-txt-main focus:border-status-danger outline-none animate-in fade-in" placeholder="Descreva o motivo...">${escapeHtml(
+                      state.customReason
+                    )}</textarea>
+                `
+                    : ""
+                }
+                <button onclick="app.saveData('missed')" class="w-full bg-status-danger hover:bg-red-600 text-white py-4 rounded-xl font-bold mt-4 transition-transform active:scale-[0.98]">
+                    Confirmar Falta
+                </button>
+                ${
+                  state.gymData[state.selectedDay.dateKey]
+                    ? `<button onclick="app.deleteEntry()" class="w-full text-status-danger font-bold text-sm py-3 mt-2">Excluir Registro</button>`
+                    : ""
+                }
+            </div>`;
         }
 
-        modal.innerHTML = `<div class="bg-app w-full max-w-[450px] rounded-3xl shadow-none overflow-hidden flex flex-col max-h-[90vh] border border-bordercol"><div class="flex justify-between items-center p-5 border-b border-bordercol bg-surface"><div><h3 class="text-xl font-bold text-txt-main">Dia ${
-          state.selectedDay.day
-        }</h3><p class="text-txt-dim text-xs uppercase font-bold tracking-widest">${
-          monthNames[state.currentDate.getMonth()]
-        }</p></div><button onclick="app.closeModal()" class="p-2 rounded-full bg-bordercol hover:bg-zinc-700"><i data-lucide="x" class="w-5 h-5 text-txt-main"></i></button></div><div class="p-5 overflow-y-auto custom-scrollbar">${content}</div></div>`;
+        modal.innerHTML = `
+            <div class="bg-surface w-full max-w-[450px] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-bordercol">
+                <div class="flex justify-between items-center p-5 border-b border-bordercol bg-surface">
+                    <div>
+                        <h3 class="text-xl font-bold text-txt-main">Dia ${
+                          state.selectedDay.day
+                        }</h3>
+                        <p class="text-txt-dim text-xs uppercase font-bold tracking-widest">${
+                          monthNames[state.currentDate.getMonth()]
+                        }</p>
+                    </div>
+                    <button onclick="app.closeModal()" class="p-2 rounded-full bg-inputbg hover:bg-bordercol text-txt-dim hover:text-brand transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+                <div class="p-5 overflow-y-auto custom-scrollbar bg-surface">
+                    ${content}
+                </div>
+            </div>
+        `;
         root.appendChild(modal);
       }
 
@@ -1835,84 +1990,190 @@
           "fixed inset-0 flex items-end sm:items-center justify-center sm:p-4 z-50";
         modal.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
         modal.style.backdropFilter = "blur(4px)";
+
         let content = "";
 
+        // TELA 1: SELEÇÃO DE DIAS
         if (state.selectedWeekday === null) {
           const weekdayButtons = weekdays
             .map((d, i) => {
               const hasExercises = state.currentRoutine.days[i].length > 0;
+              // Cores ajustadas: bg-inputbg para vazio, bg-brand/10 para preenchido
               const cardClass = hasExercises
-                ? "bg-surface border-brand"
-                : "bg-surface border-bordercol hover:border-zinc-700 opacity-70 hover:opacity-100";
-              return `<button onclick="app.openDayEditor(${i})" class="${cardClass} relative flex flex-col justify-between p-4 rounded-2xl border transition-all active:scale-95 text-left group h-28"><div class="flex justify-between items-start w-full"><span class="text-3xl font-black tracking-tighter ${
-                hasExercises ? "text-txt-main" : "text-zinc-600"
-              }">${d.substring(0, 3).toUpperCase()}</span>${
-                hasExercises
-                  ? `<div class="bg-brand-faint text-brand p-1.5 rounded-lg"><i data-lucide="dumbbell" class="w-4 h-4"></i></div>`
-                  : `<div class="p-1.5"><i data-lucide="plus" class="w-4 h-4 text-zinc-700 group-hover:text-zinc-500"></i></div>`
-              }</div><div><p class="text-[10px] font-bold uppercase tracking-widest ${
-                hasExercises ? "text-brand" : "text-zinc-600"
-              }">${hasExercises ? "Treino" : "Vazio"}</p></div></button>`;
+                ? "bg-brand/5 border-brand shadow-sm"
+                : "bg-inputbg border-bordercol hover:border-brand opacity-80 hover:opacity-100";
+
+              const iconHtml = hasExercises
+                ? `<div class="bg-brand text-white p-1.5 rounded-lg shadow-sm"><i data-lucide="dumbbell" class="w-4 h-4"></i></div>`
+                : `<div class="p-1.5"><i data-lucide="plus" class="w-4 h-4 text-txt-dim group-hover:text-brand"></i></div>`;
+
+              return `
+            <button onclick="app.openDayEditor(${i})" class="${cardClass} relative flex flex-col justify-between p-4 rounded-2xl border transition-all active:scale-[0.98] text-left group h-28">
+                <div class="flex justify-between items-start w-full">
+                    <span class="text-3xl font-black tracking-tighter ${
+                      hasExercises ? "text-brand" : "text-txt-dim"
+                    }">${d.substring(0, 3).toUpperCase()}</span>
+                    ${iconHtml}
+                </div>
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-widest ${
+                      hasExercises ? "text-brand" : "text-txt-dim"
+                    }">${hasExercises ? "Treino" : "Vazio"}</p>
+                    ${
+                      hasExercises
+                        ? `<p class="text-xs text-txt-muted mt-0.5">${state.currentRoutine.days[i].length} ex.</p>`
+                        : ""
+                    }
+                </div>
+            </button>`;
             })
             .join("");
-          content = `<div class="mb-6"><label class="block text-xs font-bold text-txt-dim mb-2 uppercase tracking-wider">Nome</label><input type="text" value="${escapeHtml(
-            state.routineName
-          )}" oninput="state.routineName = this.value" class="w-full p-4 rounded-xl bg-inputbg border border-bordercol text-white focus:border-brand outline-none text-lg font-bold placeholder-zinc-700 transition-colors" placeholder="Ex: Hipertrofia ABC"></div><div class="flex flex-col mb-2 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar"><label class="block text-xs font-bold text-txt-dim mb-3 uppercase tracking-wider">Configurar Dias</label><div class="grid grid-cols-2 gap-3 pb-4">${weekdayButtons}</div></div><div class="pt-2 border-t border-bordercol"><button onclick="app.saveRoutine()" class="w-full bg-brand hover:bg-brand-hover text-white py-4 rounded-xl font-bold shadow-lg transition-all active:scale-95">Salvar Ficha</button></div>`;
+
+          content = `
+            <div class="mb-6">
+                <label class="block text-xs font-bold text-txt-dim mb-2 uppercase tracking-wider">Nome da Ficha</label>
+                <input type="text" value="${escapeHtml(
+                  state.routineName
+                )}" oninput="state.routineName = this.value" class="w-full p-4 rounded-xl bg-inputbg border border-bordercol text-txt-main focus:border-brand outline-none text-lg font-bold placeholder-txt-dim transition-colors" placeholder="Ex: Hipertrofia ABC">
+            </div>
+            <div class="flex flex-col mb-2 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
+                <label class="block text-xs font-bold text-txt-dim mb-3 uppercase tracking-wider">Configurar Dias</label>
+                <div class="grid grid-cols-2 gap-3 pb-4">
+                    ${weekdayButtons}
+                </div>
+            </div>
+            <div class="pt-4 border-t border-bordercol">
+                <button onclick="app.saveRoutine()" class="w-full bg-brand hover:bg-brand-hover text-white py-4 rounded-xl font-bold shadow-lg transition-all active:scale-[0.98]">
+                    Salvar Ficha
+                </button>
+            </div>`;
+
+          // TELA 2: LISTA DE EXERCÍCIOS DO DIA
         } else {
           const exList = state.routineExercises
             .map((ex, i) => {
               const gifUrl = exerciseGifs[ex.name] || exerciseGifs["Outro"];
               const btnUpClass =
                 i === 0
-                  ? "text-zinc-700 cursor-not-allowed"
-                  : "text-txt-dim hover:text-white hover:bg-bordercol";
+                  ? "text-txt-dim/30 cursor-not-allowed"
+                  : "text-txt-dim hover:text-brand hover:bg-bordercol";
               const btnDownClass =
                 i === state.routineExercises.length - 1
-                  ? "text-zinc-700 cursor-not-allowed"
-                  : "text-txt-dim hover:text-white hover:bg-bordercol";
-              return `<div class="p-3 rounded-2xl bg-surface/50 border border-bordercol mb-3 relative group hover:border-zinc-700 transition-colors">
-               <div class="flex items-start gap-3 mb-3">
-                 <div onclick="app.openPicker(${i})" class="w-14 h-14 shrink-0 rounded-xl bg-inputbg border border-bordercol overflow-hidden relative cursor-pointer hover:border-brand transition-colors"><img src="${gifUrl}" class="w-full h-full object-cover opacity-80" onerror="this.src='https://placehold.co/100x100/27272a/FFF?text=IMG'"></div>
-                 <div class="flex-1 min-w-0"><div class="flex justify-between items-start"><div onclick="app.openPicker(${i})" class="cursor-pointer"><span class="text-[10px] font-bold text-brand uppercase tracking-wider block mb-0.5">Exercício ${
-                i + 1
-              }</span><h4 class="text-white font-bold text-sm truncate leading-tight">${escapeHtml(
-                ex.name || "Personalizado"
-              )}</h4></div><div class="flex items-center gap-1 -mr-2"><button onclick="app.moveRoutineExercise(${i}, -1)" class="p-1 rounded ${btnUpClass}"><i data-lucide="arrow-up" class="w-4 h-4"></i></button><button onclick="app.moveRoutineExercise(${i}, 1)" class="p-1 rounded ${btnDownClass}"><i data-lucide="arrow-down" class="w-4 h-4"></i></button><div class="w-px h-3 bg-bordercol mx-1"></div><button onclick="app.removeRoutineExercise(${i})" class="text-status-danger/40 hover:text-status-danger p-1 rounded hover:bg-status-danger-faint"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>${
+                  ? "text-txt-dim/30 cursor-not-allowed"
+                  : "text-txt-dim hover:text-brand hover:bg-bordercol";
+              const displayTitle =
                 ex.name === "Outro"
-                  ? `<input type="text" value="${escapeHtml(
-                      ex.customName
-                    )}" oninput="app.updateRoutineExercise(${i}, 'customName', this.value)" class="mt-2 w-full bg-black/50 border border-bordercol rounded-lg px-2 py-1 text-xs text-white focus:border-brand outline-none" placeholder="Nome...">`
-                  : ""
-              }</div>
+                  ? ex.customName || "Personalizado"
+                  : ex.name;
+
+              return `
+             <div class="p-3 rounded-2xl bg-inputbg border border-bordercol mb-3 relative group hover:border-brand/50 transition-colors">
+               <div class="flex items-start gap-3 mb-3">
+                 <div onclick="app.openPicker(${i})" class="w-14 h-14 shrink-0 rounded-xl bg-surface border border-bordercol overflow-hidden relative cursor-pointer hover:border-brand transition-colors">
+                    <img src="${gifUrl}" class="w-full h-full object-cover opacity-80" onerror="this.src='https://placehold.co/100x100/27272a/FFF?text=IMG'">
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/20"><i data-lucide="refresh-cw" class="w-4 h-4 text-white"></i></div>
+                 </div>
+                 <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start">
+                        <div onclick="app.openPicker(${i})" class="cursor-pointer">
+                            <span class="text-[10px] font-bold text-brand uppercase tracking-wider block mb-0.5">Exercício ${
+                              i + 1
+                            }</span>
+                            <h4 class="text-txt-main font-bold text-sm truncate leading-tight">${escapeHtml(
+                              displayTitle
+                            )}</h4>
+                        </div>
+                        <div class="flex items-center gap-1 -mr-2">
+                            <button onclick="app.moveRoutineExercise(${i}, -1)" class="p-1 rounded ${btnUpClass}"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+                            <button onclick="app.moveRoutineExercise(${i}, 1)" class="p-1 rounded ${btnDownClass}"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
+                            <div class="w-px h-3 bg-bordercol mx-1"></div>
+                            <button onclick="app.removeRoutineExercise(${i})" class="text-status-danger/60 hover:text-status-danger p-1 rounded hover:bg-status-danger/10"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                    ${
+                      ex.name === "Outro"
+                        ? `<input type="text" value="${escapeHtml(
+                            ex.customName
+                          )}" oninput="app.updateRoutineExercise(${i}, 'customName', this.value)" class="mt-2 w-full bg-surface border border-bordercol rounded-lg px-2 py-1 text-xs text-txt-main focus:border-brand outline-none" placeholder="Nome do exercício...">`
+                        : ""
+                    }
+                 </div>
                </div>
+               
                <div class="grid grid-cols-3 gap-2">
-                 <div class="relative"><input type="number" value="${escapeHtml(
-                   ex.sets
-                 )}" oninput="app.updateRoutineExercise(${i}, 'sets', this.value)" class="w-full p-2.5 rounded-lg bg-inputbg border border-bordercol text-white text-center focus:border-status-info outline-none font-bold text-sm" placeholder="0"><span class="absolute top-[-6px] left-1/2 -translate-x-1/2 text-[8px] font-bold text-status-info bg-surface px-1 uppercase">Séries</span></div>
-                 <div class="relative"><input type="number" value="${escapeHtml(
-                   ex.reps
-                 )}" oninput="app.updateRoutineExercise(${i}, 'reps', this.value)" class="w-full p-2.5 rounded-lg bg-inputbg border border-bordercol text-white text-center focus:border-status-success outline-none font-bold text-sm" placeholder="0"><span class="absolute top-[-6px] left-1/2 -translate-x-1/2 text-[8px] font-bold text-status-success bg-surface px-1 uppercase">Reps</span></div>
-                 <div class="relative"><input type="number" value="${escapeHtml(
-                   ex.weight
-                 )}" oninput="app.updateRoutineExercise(${i}, 'weight', this.value)" class="w-full p-2.5 rounded-lg bg-inputbg border border-bordercol text-white text-center focus:border-yellow-500 outline-none font-bold text-sm" placeholder="-"><span class="absolute top-[-6px] left-1/2 -translate-x-1/2 text-[8px] font-bold text-yellow-500 bg-surface px-1 uppercase">Carga</span></div>
+                 <div class="relative">
+                    <input type="number" value="${escapeHtml(
+                      ex.sets
+                    )}" oninput="app.updateRoutineExercise(${i}, 'sets', this.value)" class="w-full p-2.5 rounded-lg bg-surface border border-bordercol text-txt-main text-center focus:border-status-info outline-none font-bold text-sm" placeholder="0">
+                    <span class="absolute top-[-6px] left-1/2 -translate-x-1/2 text-[8px] font-bold text-status-info bg-inputbg px-1 uppercase border border-bordercol rounded-full">Séries</span>
+                 </div>
+                 <div class="relative">
+                    <input type="number" value="${escapeHtml(
+                      ex.reps
+                    )}" oninput="app.updateRoutineExercise(${i}, 'reps', this.value)" class="w-full p-2.5 rounded-lg bg-surface border border-bordercol text-txt-main text-center focus:border-status-success outline-none font-bold text-sm" placeholder="0">
+                    <span class="absolute top-[-6px] left-1/2 -translate-x-1/2 text-[8px] font-bold text-status-success bg-inputbg px-1 uppercase border border-bordercol rounded-full">Reps</span>
+                 </div>
+                 <div class="relative">
+                    <input type="number" value="${escapeHtml(
+                      ex.weight
+                    )}" oninput="app.updateRoutineExercise(${i}, 'weight', this.value)" class="w-full p-2.5 rounded-lg bg-surface border border-bordercol text-txt-main text-center focus:border-brand outline-none font-bold text-sm" placeholder="-">
+                    <span class="absolute top-[-6px] left-1/2 -translate-x-1/2 text-[8px] font-bold text-brand bg-inputbg px-1 uppercase border border-bordercol rounded-full">Carga</span>
+                 </div>
                </div>
              </div>`;
             })
             .join("");
-          content = `<div class="flex justify-between items-center mb-4 border-b border-bordercol pb-4"><div><h4 class="text-2xl font-bold text-white">${
-            weekdays[state.selectedWeekday]
-          }</h4><p class="text-txt-dim text-xs">Adicione os exercícios</p></div><button onclick="app.openPicker()" class="flex items-center gap-2 bg-brand hover:bg-brand-hover text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95"><i data-lucide="plus" class="w-4 h-4"></i> Adicionar</button></div><div class="mb-2 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">${
-            state.routineExercises.length
-              ? exList
-              : `<div onclick="app.openPicker()" class="flex flex-col items-center justify-center py-12 text-zinc-600 border-2 border-dashed border-bordercol rounded-2xl cursor-pointer hover:border-brand/50 hover:text-brand transition-colors"><i data-lucide="dumbbell" class="w-10 h-10 mb-2 opacity-30"></i><p class="text-sm font-medium">Toque para adicionar</p></div>`
-          }</div><div class="pt-2 border-t border-bordercol"><button onclick="app.saveDayExercises()" class="w-full bg-white hover:bg-zinc-200 text-black py-4 rounded-xl font-bold transition-all active:scale-95">Salvar Treino</button></div>`;
+
+          content = `
+            <div class="flex justify-between items-center mb-4 border-b border-bordercol pb-4">
+                <div>
+                    <h4 class="text-2xl font-bold text-txt-main">${
+                      weekdays[state.selectedWeekday]
+                    }</h4>
+                    <p class="text-txt-dim text-xs">Adicione os exercícios do dia</p>
+                </div>
+                <button onclick="app.openPicker()" class="flex items-center gap-2 bg-brand hover:bg-brand-hover text-white px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-brand/20">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Adicionar
+                </button>
+            </div>
+            
+            <div class="mb-2 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
+                ${
+                  state.routineExercises.length
+                    ? exList
+                    : `<div onclick="app.openPicker()" class="flex flex-col items-center justify-center py-12 text-txt-dim border-2 border-dashed border-bordercol rounded-2xl cursor-pointer hover:border-brand/50 hover:text-brand transition-colors">
+                        <i data-lucide="dumbbell" class="w-10 h-10 mb-2 opacity-30"></i>
+                        <p class="text-sm font-medium">Toque para adicionar exercício</p>
+                       </div>`
+                }
+            </div>
+            
+            <div class="pt-4 border-t border-bordercol">
+                <button onclick="app.saveDayExercises()" class="w-full bg-surface hover:bg-bordercol border border-bordercol text-txt-main py-4 rounded-xl font-bold transition-all active:scale-[0.98]">
+                    Concluir Treino
+                </button>
+            </div>`;
         }
 
-        modal.innerHTML = `<div class="bg-app w-full sm:w-[500px] sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col max-h-[95vh] border-t border-bordercol sm:border"><div class="flex justify-between items-center p-5 border-b border-bordercol bg-app rounded-t-3xl"><h3 class="text-lg font-bold text-white flex items-center gap-2">${
-          state.routineModalMode === "create"
-            ? '<i data-lucide="plus-circle" class="text-brand"></i> Nova Ficha'
-            : '<i data-lucide="pencil" class="text-brand"></i> Editar Ficha'
-        }</h3><button onclick="state.showRoutineModal = false; state.selectedWeekday = null; app.render()" class="p-2 rounded-full bg-surface hover:bg-bordercol text-txt-muted hover:text-white transition-colors border border-bordercol"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="p-5 overflow-y-auto custom-scrollbar bg-app">${content}</div></div>`;
+        modal.innerHTML = `
+            <div class="bg-surface w-full sm:w-[500px] sm:rounded-3xl rounded-t-3xl shadow-2xl flex flex-col max-h-[95vh] border-t border-bordercol sm:border">
+                <div class="flex justify-between items-center p-5 border-b border-bordercol bg-surface rounded-t-3xl">
+                    <h3 class="text-lg font-bold text-txt-main flex items-center gap-2">
+                        ${
+                          state.routineModalMode === "create"
+                            ? '<i data-lucide="plus-circle" class="text-brand"></i> Nova Ficha'
+                            : '<i data-lucide="pencil" class="text-brand"></i> Editar Ficha'
+                        }
+                    </h3>
+                    <button onclick="state.showRoutineModal = false; state.selectedWeekday = null; app.render()" class="p-2 rounded-full bg-inputbg hover:bg-bordercol text-txt-dim hover:text-brand transition-colors border border-bordercol">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div class="p-5 overflow-y-auto custom-scrollbar bg-surface">
+                    ${content}
+                </div>
+            </div>
+        `;
         root.appendChild(modal);
       }
 
@@ -2013,6 +2274,8 @@
         let startDate = new Date();
         let labels = [];
         let dataPoints = [];
+
+        // --- Lógica de Dados (Mantida igual) ---
         if (state.statsPeriod === "week") {
           const day = now.getDay();
           startDate.setDate(now.getDate() - day);
@@ -2071,6 +2334,7 @@
           }
         }
 
+        // Estatísticas Gerais (Mantido)
         const allEntries = Object.values(state.gymData);
         const totalWorkouts = allEntries.filter((e) => e.attended).length;
         const totalRest = allEntries.filter((e) => e.status === "rest").length;
@@ -2096,7 +2360,9 @@
           }
         }
 
+        // --- RENDERIZAÇÃO DO GRÁFICO (SVG PURO) ---
         let chartContent = "";
+
         if (state.statsMetric === "weight") {
           const cleanData = dataPoints.filter((n) => n !== null);
           if (cleanData.length < 1) {
@@ -2108,19 +2374,22 @@
               min -= 5;
               max += 5;
             }
-            const padding = (max - min) * 0.2;
+            const padding = (max - min) * 0.3; // Margem vertical para caber a bolinha e texto
             min -= padding;
             max += padding;
             const range = max - min;
+
             let pathD = "";
             let areaPathD = "";
-            let pointsHtml = "";
+            let circlesSvg = "";
             const stepX = 100 / (dataPoints.length - 1);
             let hasStarted = false;
+
             dataPoints.forEach((val, i) => {
               if (val !== null) {
                 const x = i * stepX;
                 const y = 100 - ((val - min) / range) * 100;
+
                 if (!hasStarted) {
                   pathD += `M ${x} ${y}`;
                   areaPathD += `M ${x} ${100} L ${x} ${y}`;
@@ -2129,36 +2398,55 @@
                   pathD += ` L ${x} ${y}`;
                   areaPathD += ` L ${x} ${y}`;
                 }
-                pointsHtml += `<div class="absolute w-3 h-3 bg-surface border-2 border-brand rounded-full hover:scale-125 transition-transform cursor-pointer group" style="left: ${x}%; top: ${y}%; transform: translate(-50%, -50%);"><div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-surface border border-bordercol text-txt-main text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">${val.toFixed(
+
+                // AQUI ESTÁ A CORREÇÃO: Bolinha e Texto desenhados no SVG
+                // O texto mostra o peso acima da bolinha
+                circlesSvg += `
+                    <circle cx="${x}" cy="${y}" r="2" fill="var(--bg-surface)" stroke="${brandColor}" stroke-width="2" />
+                    <text x="${x}" y="${
+                  y - 5
+                }" font-size="4" fill="var(--text-dim)" text-anchor="middle" font-weight="bold">${val.toFixed(
                   1
-                )}kg</div></div>`;
+                )}</text>
+                `;
               }
             });
+
             if (hasStarted) {
               const lastValidIndex = dataPoints.findLastIndex(
                 (v) => v !== null
               );
               areaPathD += ` L ${lastValidIndex * stepX} 100 Z`;
             }
-            chartContent = `<div class="relative h-64 w-full select-none bg-surface rounded-2xl border border-bordercol p-4"><div class="absolute inset-0 flex flex-col justify-between text-[10px] text-zinc-600 font-mono py-6 px-4"><div class="border-b border-bordercol/50 w-full text-right pr-1">${max.toFixed(
-              0
-            )}</div><div class="border-b border-bordercol/50 w-full text-right pr-1">${(
-              min +
-              range * 0.5
-            ).toFixed(
-              0
-            )}</div><div class="border-b border-bordercol/50 w-full text-right pr-1">${min.toFixed(
-              0
-            )}</div></div><svg viewBox="0 0 100 100" preserveAspectRatio="none" class="absolute inset-0 w-full h-full overflow-visible p-4"><defs><linearGradient id="gradientArea" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="${brandColor}" stop-opacity="0.3" /><stop offset="100%" stop-color="${brandColor}" stop-opacity="0" /></linearGradient></defs><path d="${areaPathD}" fill="url(#gradientArea)" stroke="none" /><path d="${pathD}" fill="none" stroke="${brandColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" /></svg><div class="absolute inset-0 p-4">${pointsHtml}</div><div class="absolute bottom-1 left-4 right-4 flex justify-between">${labels
-              .map(
-                (l) =>
-                  `<div style="width: ${
-                    100 / labels.length
-                  }%; text-align: center;" class="text-[9px] text-txt-dim truncate">${l}</div>`
-              )
-              .join("")}</div></div>`;
+
+            chartContent = `
+                <div class="relative h-64 w-full select-none bg-surface rounded-2xl border border-bordercol p-2">
+                    <svg viewBox="-2 -10 104 120" preserveAspectRatio="none" class="w-full h-full overflow-visible">
+                        <defs>
+                            <linearGradient id="gradientArea" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stop-color="${brandColor}" stop-opacity="0.3" />
+                                <stop offset="100%" stop-color="${brandColor}" stop-opacity="0" />
+                            </linearGradient>
+                        </defs>
+                        <path d="${areaPathD}" fill="url(#gradientArea)" stroke="none" />
+                        <path d="${pathD}" fill="none" stroke="${brandColor}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+                        ${circlesSvg}
+                    </svg>
+                    <div class="absolute bottom-2 left-2 right-2 flex justify-between">
+                        ${labels
+                          .map(
+                            (l) =>
+                              `<div style="width: ${
+                                100 / labels.length
+                              }%; text-align: center;" class="text-[9px] text-txt-dim truncate">${l}</div>`
+                          )
+                          .join("")}
+                    </div>
+                </div>
+            `;
           }
         } else {
+          // Gráfico de Frequência (Barras) - Mantido
           const maxVal = Math.max(...dataPoints, 5);
           const bars = dataPoints
             .map((val, i) => {
@@ -2464,8 +2752,12 @@
         const modal = document.createElement("div");
         modal.className =
           "fixed inset-0 z-[60] bg-black/95 flex flex-col animate-in fade-in duration-200";
+
         let list = [];
+
+        // 1. Lógica do Filtro "Todos"
         if (state.pickerFilter === "todos") {
+          // Junta todas as listas e remove duplicatas
           const all = [
             ...exercisesList.cardio,
             ...exercisesList.inferior,
@@ -2475,6 +2767,8 @@
         } else {
           list = exercisesList[state.pickerFilter] || [];
         }
+
+        // 2. Lógica da Busca
         if (state.pickerSearch) {
           const term = state.pickerSearch.toLowerCase();
           list = list.filter((ex) => ex.toLowerCase().includes(term));
@@ -2486,15 +2780,19 @@
               exerciseGifs[exName] ||
               exerciseGifs[exName.replace(" 45°", "")] ||
               exerciseGifs["Outro"];
+
+            // Tenta descobrir o tipo original para salvar corretamente
             let realType = "superior";
             if (exercisesList.inferior.includes(exName)) realType = "inferior";
             else if (exercisesList.cardio.includes(exName)) realType = "cardio";
+
             const isUltimate =
               typeof ultimateList !== "undefined" &&
               ultimateList.includes(exName);
             const borderClass = isUltimate
               ? "border-brand border-2"
               : "border-bordercol";
+
             return `<button onclick="app.selectExerciseFromPicker('${escapeHtml(
               exName
             )}', '${realType}')" class="flex flex-col gap-2 group active:scale-95 transition-transform text-left"><div class="aspect-square w-full rounded-2xl overflow-hidden border ${borderClass} group-hover:border-brand transition-colors relative bg-surface"><img src="${gifUrl}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100" loading="lazy" onerror="this.onerror=null; this.src='https://placehold.co/100x100/27272a/FFF?text=IMG';"><div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>${
@@ -2507,29 +2805,49 @@
           })
           .join("");
 
-        modal.innerHTML = `<div class="p-4 bg-surface border-b border-bordercol flex items-center gap-3 shrink-0 z-10"><button onclick="app.closePicker()" class="p-2 -ml-2 rounded-full hover:bg-bordercol text-txt-dim"><i data-lucide="arrow-left" class="w-6 h-6"></i></button><div class="flex-1 relative"><i data-lucide="search" class="w-4 h-4 text-txt-dim absolute left-3 top-1/2 -translate-y-1/2"></i><input type="text" value="${escapeHtml(
-          state.pickerSearch
-        )}" oninput="app.setPickerSearch(this.value)" placeholder="Buscar..." class="w-full bg-inputbg border border-bordercol rounded-full py-2.5 pl-10 pr-4 text-base text-white focus:border-brand outline-none placeholder-zinc-500"></div></div><div class="flex-1 overflow-y-auto custom-scrollbar"><div class="px-4 pt-4 pb-2 grid grid-cols-4 gap-2 sticky top-0 bg-surface/95 backdrop-blur-sm z-10"><button onclick="app.setPickerFilter('inferior')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${
-          state.pickerFilter === "inferior"
-            ? "bg-brand text-white border-brand"
-            : "bg-surface text-txt-dim border-bordercol hover:bg-bordercol"
-        }">Inferior</button><button onclick="app.setPickerFilter('superior')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${
-          state.pickerFilter === "superior"
-            ? "bg-brand text-white border-brand"
-            : "bg-surface text-txt-dim border-bordercol hover:bg-bordercol"
-        }">Superior</button><button onclick="app.setPickerFilter('cardio')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${
-          state.pickerFilter === "cardio"
-            ? "bg-brand text-white border-brand"
-            : "bg-surface text-txt-dim border-bordercol hover:bg-bordercol"
-        }">Cardio</button><button onclick="app.setPickerFilter('todos')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${
-          state.pickerFilter === "todos"
-            ? "bg-brand text-white border-brand"
-            : "bg-surface text-txt-dim border-bordercol hover:bg-bordercol"
-        }">Todos</button></div><div id="picker-grid-container" class="p-4 pt-2">${
-          list.length > 0
-            ? `<div class="grid grid-cols-3 gap-3 pb-20">${gridHtml}</div>`
-            : `<div class="text-center text-txt-dim mt-20 flex flex-col items-center"><i data-lucide="frown" class="w-10 h-10 mb-2 opacity-50"></i><p>Nada encontrado</p></div>`
-        }</div></div>`;
+        modal.innerHTML = `
+            <div class="p-4 bg-surface border-b border-bordercol flex items-center gap-3 shrink-0 z-10">
+                <button onclick="app.closePicker()" class="p-2 -ml-2 rounded-full hover:bg-bordercol text-txt-dim"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+                <div class="flex-1 relative">
+                    <i data-lucide="search" class="w-4 h-4 text-txt-dim absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" value="${escapeHtml(
+                      state.pickerSearch
+                    )}" oninput="app.setPickerSearch(this.value)" placeholder="Buscar..." class="w-full bg-inputbg border border-bordercol rounded-full py-2.5 pl-10 pr-4 text-base text-white focus:border-brand outline-none placeholder-zinc-500">
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto custom-scrollbar">
+                <div class="px-4 pt-4 pb-2 grid grid-cols-4 gap-2 sticky top-0 bg-surface/95 backdrop-blur-sm z-10">
+                    <button onclick="app.setPickerFilter('todos')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${
+                      state.pickerFilter === "todos"
+                        ? "bg-brand text-white border-brand"
+                        : "bg-surface text-txt-dim border-bordercol hover:bg-bordercol"
+                    }">Todos</button>
+                    
+                    <button onclick="app.setPickerFilter('inferior')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${
+                      state.pickerFilter === "inferior"
+                        ? "bg-brand text-white border-brand"
+                        : "bg-surface text-txt-dim border-bordercol hover:bg-bordercol"
+                    }">Inferior</button>
+                    <button onclick="app.setPickerFilter('superior')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${
+                      state.pickerFilter === "superior"
+                        ? "bg-brand text-white border-brand"
+                        : "bg-surface text-txt-dim border-bordercol hover:bg-bordercol"
+                    }">Superior</button>
+                    <button onclick="app.setPickerFilter('cardio')" class="py-2.5 rounded-xl text-xs font-bold transition-all border ${
+                      state.pickerFilter === "cardio"
+                        ? "bg-brand text-white border-brand"
+                        : "bg-surface text-txt-dim border-bordercol hover:bg-bordercol"
+                    }">Cardio</button>
+                </div>
+                <div id="picker-grid-container" class="p-4 pt-2">
+                    ${
+                      list.length > 0
+                        ? `<div class="grid grid-cols-3 gap-3 pb-20">${gridHtml}</div>`
+                        : `<div class="text-center text-txt-dim mt-20 flex flex-col items-center"><i data-lucide="frown" class="w-10 h-10 mb-2 opacity-50"></i><p>Nada encontrado</p></div>`
+                    }
+                </div>
+            </div>
+        `;
         root.appendChild(modal);
       }
 
