@@ -216,17 +216,24 @@
 
       // === ESTADO GLOBAL ===
       const state = {
+        // TEMA: Recupera ou define Dark como padrão
+        theme: localStorage.getItem("gymTheme") || "dark",
+
+        // TUTORIAL (Modal de Funcionalidades)
+        // Lógica: Se "gymHasVisited" não existe (null), retorna true e mostra o modal.
         showFeaturesModal: !localStorage.getItem("gymHasVisited"),
 
-        theme: localStorage.getItem("gymTheme") || "dark",
+        // DADOS DO USUÁRIO
         diet: JSON.parse(localStorage.getItem("gymDiet")) || [],
         showDietModal: false,
         editingMeal: null,
+
         activeTool: null,
         timerRunning: false,
         timerTime: 60,
         timerTotal: 60,
         timerInterval: null,
+
         bodyMeasurements: JSON.parse(
           localStorage.getItem("gymMeasurements")
         ) || {
@@ -238,32 +245,43 @@
           waist: "",
           calves: "",
         },
+
         dailyCheck: JSON.parse(localStorage.getItem("gymChecklist")) || {
           creatine: false,
           water: false,
           sleep: false,
           protein: false,
         },
+
         statsPeriod: "month",
         statsMetric: "weight",
+
+        // CONTROLE DE UI
         showExercisePicker: false,
         pickerFilter: "inferior",
         pickerSearch: "",
         editingIndex: null,
         pickerContext: "routine",
+
+        // LOGIN
         isLogged: false,
         userPhoto: null,
         userName: "",
         showProfileMenu: false,
-        showFeaturesModal: false,
+
         viewingImage: null,
         currentTab: "calendar",
         currentDate: new Date(),
+
+        // DADOS PRINCIPAIS
         gymData: JSON.parse(localStorage.getItem("gymTrackerData")) || {},
         routines: JSON.parse(localStorage.getItem("gymRoutines")) || [],
+
         selectedDay: null,
         showModal: false,
         modalMode: "select",
+
+        // FORMULÁRIO DE TREINO
         weight: "",
         workoutType: "",
         exercises: [
@@ -273,12 +291,15 @@
         photo: null,
         missedReason: "",
         customReason: "",
+
+        // ROTINAS
         showRoutineModal: false,
         routineModalMode: "create",
         currentRoutine: null,
         routineName: "",
         selectedWeekday: null,
         routineExercises: [],
+
         viewingRoutineId: null,
         viewingDay: null,
       };
@@ -675,6 +696,163 @@
           lucide.createIcons();
         },
 
+        toggleFeatureDetails: (id) => {
+          const element = document.getElementById(`feature-details-${id}`);
+          const icon = document.getElementById(`feature-icon-${id}`);
+
+          // Essa verificação evita bugs se o elemento não for encontrado
+          if (element && icon) {
+            if (element.classList.contains("hidden")) {
+              // Abrir
+              element.classList.remove("hidden");
+              element.classList.add(
+                "animate-in",
+                "fade-in",
+                "slide-in-from-top-1"
+              );
+              icon.style.transform = "rotate(180deg)";
+            } else {
+              // Fechar
+              element.classList.add("hidden");
+              element.classList.remove(
+                "animate-in",
+                "fade-in",
+                "slide-in-from-top-1"
+              );
+              icon.style.transform = "rotate(0deg)";
+            }
+          }
+        },
+
+        renderFeaturesModal: (root) => {
+          const modal = document.createElement("div");
+          modal.className =
+            "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200";
+
+          // AQUI ESTÃO OS TEXTOS DETALHADOS QUE VOCÊ PEDIU:
+          const features = [
+            {
+              id: "daily",
+              icon: "calendar-check",
+              title: "Diário de Treino",
+              desc: "Gerencie sua frequência e histórico.",
+              details:
+                "O coração do app. Marque seus dias como 'Treino', 'Descanso' ou 'Falta'. Ao registrar um treino, você seleciona a ficha usada, anota as cargas, como se sentiu e pode até salvar uma foto do shape do dia para comparar sua evolução futura.",
+            },
+            {
+              id: "routines",
+              icon: "clipboard-list",
+              title: "Montagem de Fichas",
+              desc: "Crie treinos ABC, ABCD ou personalizados.",
+              details:
+                "Liberdade total para montar seu treino. Crie rotinas ilimitadas (ex: 'Treino de Força', 'Adaptação'). Adicione exercícios específicos para cada dia da semana, reordene a lista e edite séries e repetições a qualquer momento.",
+            },
+            {
+              id: "gifs",
+              icon: "play-circle",
+              title: "Biblioteca Visual (GIFs)",
+              desc: "Aprenda a execução correta.",
+              details:
+                "Nunca mais fique na dúvida na academia. Ao clicar em qualquer exercício da sua ficha, você vê um GIF em alta qualidade da execução, lista de músculos trabalhados e 'Dicas de Mestre' para melhorar sua técnica e evitar lesões.",
+            },
+            {
+              id: "diet",
+              icon: "utensils",
+              title: "Gestão de Dieta",
+              desc: "Planeje suas refeições e horários.",
+              details:
+                "Organize sua alimentação. Crie refeições (Café, Almoço, Janta...), defina o horário e liste os alimentos e quantidades. Se ativar as notificações, o app te avisa 15 minutos antes de cada refeição para você não esquecer de comer.",
+            },
+            {
+              id: "tools",
+              icon: "wrench",
+              title: "Ferramentas Úteis",
+              desc: "Cronômetro, Medidas e Checklist.",
+              details:
+                "Um canivete suíço para quem treina: Cronômetro para o descanso entre séries, Tabela de Medidas para registrar o crescimento de braço/perna/peito e um Checklist diário para marcar seus hábitos (Água, Creatina, Sono, Proteína).",
+            },
+            {
+              id: "cloud",
+              icon: "cloud",
+              title: "Backup na Nuvem",
+              desc: "Seus dados salvos no Google.",
+              details:
+                "Segurança total. Faça login com sua conta Google para sincronizar tudo na nuvem. Se você trocar de celular, formatar ou acessar pelo computador, suas fichas, histórico e dieta estarão lá, sãos e salvos.",
+            },
+            {
+              id: "ui",
+              icon: "moon",
+              title: "Personalização",
+              desc: "Temas Claro e Escuro.",
+              details:
+                "Escolha o visual que mais te agrada. O modo Dark economiza bateria e foca no conteúdo, enquanto o novo modo Light (Lavanda) oferece uma interface limpa e moderna com alto contraste.",
+            },
+          ];
+
+          const featuresHtml = features
+            .map(
+              (f) => `
+                <div onclick="app.toggleFeatureDetails('${
+                  f.id
+                }')" class="group bg-surface border border-bordercol rounded-2xl overflow-hidden cursor-pointer hover:border-brand transition-all active:scale-[0.98] mb-3">
+                    <div class="flex items-center gap-4 p-4">
+                        <div class="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand flex-shrink-0 group-hover:bg-brand group-hover:text-white transition-colors">
+                            <i data-lucide="${f.icon}" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-txt-main font-bold text-sm mb-0.5">${escapeHtml(
+                              f.title
+                            )}</h4>
+                            <p class="text-txt-dim text-xs">${escapeHtml(
+                              f.desc
+                            )}</p>
+                        </div>
+                        <i id="feature-icon-${
+                          f.id
+                        }" data-lucide="chevron-down" class="w-5 h-5 text-txt-dim transition-transform duration-300"></i>
+                    </div>
+                    
+                    <div id="feature-details-${
+                      f.id
+                    }" class="hidden bg-inputbg border-t border-bordercol p-4">
+                        <p class="text-txt-dim text-xs leading-relaxed">
+                            ${escapeHtml(f.details)}
+                        </p>
+                    </div>
+                </div>
+            `
+            )
+            .join("");
+
+          modal.innerHTML = `
+                <div class="bg-app w-full max-w-md rounded-3xl border border-bordercol shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                    <div class="p-6 border-b border-bordercol bg-surface z-10">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-xl font-bold text-txt-main flex items-center gap-2">
+                                <i data-lucide="sparkles" class="text-brand"></i> Novidades
+                            </h3>
+                            <button onclick="app.toggleFeatures()" class="p-2 rounded-full bg-app hover:bg-bordercol text-txt-dim hover:text-brand border border-bordercol transition-colors">
+                                <i data-lucide="x" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        <p class="text-txt-dim text-sm">Toque nos itens para ver os detalhes.</p>
+                    </div>
+
+                    <div class="p-4 overflow-y-auto custom-scrollbar bg-app">
+                        ${featuresHtml}
+                    </div>
+
+                    <div class="p-4 border-t border-bordercol bg-surface z-10">
+                        <button onclick="app.toggleFeatures()" class="w-full bg-brand hover:bg-brand-hover text-white py-3.5 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-brand/20">
+                            Entendi, vamos treinar!
+                        </button>
+                    </div>
+                </div>
+            `;
+          root.appendChild(modal);
+          lucide.createIcons();
+        },
+
         toggleTheme: () => {
           state.theme = state.theme === "dark" ? "light" : "dark";
           saveToStorage();
@@ -845,14 +1023,40 @@
           app.render();
         },
         toggleFeatures: () => {
-            state.showFeaturesModal = !state.showFeaturesModal;
-            
-            // Se estiver fechando, marca que o usuário já viu para não mostrar automaticamente de novo
-            if (!state.showFeaturesModal) {
-                localStorage.setItem("gymHasVisited", "true");
+          state.showFeaturesModal = !state.showFeaturesModal;
+
+          // Se estiver fechando, marca que já viu para não abrir sozinho de novo
+          if (!state.showFeaturesModal) {
+            localStorage.setItem("gymHasVisited", "true");
+          }
+
+          app.render();
+        },
+        toggleFeatureDetails: (id) => {
+          const element = document.getElementById(`feature-details-${id}`);
+          const icon = document.getElementById(`feature-icon-${id}`);
+
+          if (element && icon) {
+            if (element.classList.contains("hidden")) {
+              // Abrir
+              element.classList.remove("hidden");
+              element.classList.add(
+                "animate-in",
+                "fade-in",
+                "slide-in-from-top-1"
+              );
+              icon.style.transform = "rotate(180deg)";
+            } else {
+              // Fechar
+              element.classList.add("hidden");
+              element.classList.remove(
+                "animate-in",
+                "fade-in",
+                "slide-in-from-top-1"
+              );
+              icon.style.transform = "rotate(0deg)";
             }
-            
-            app.render();
+          }
         },
         openImage: (name, url) => {
           state.viewingImage = { name, url };
@@ -2129,121 +2333,98 @@
 
       function renderFeaturesModal(root) {
         const modal = document.createElement("div");
-        modal.className = "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200";
-        
-        const features = [
-            { 
-                icon: "cloud", 
-                title: "Sincronização na Nuvem", 
-                desc: "Faça login com o Google para salvar seus dados. Acesse sua ficha e dieta de qualquer dispositivo sem perder nada." 
-            },
-            { 
-                icon: "utensils", 
-                title: "Planejamento Alimentar", 
-                desc: "Nova aba de Dieta! Crie refeições ilimitadas, adicione alimentos, quantidades e receba lembretes para comer." 
-            },
-            { 
-                icon: "moon", 
-                title: "Temas Claro & Escuro", 
-                desc: "Personalize o visual do app. Alterne entre o modo Dark (foco total) e o novo modo Light (Lavanda) quando quiser." 
-            },
-            { 
-                icon: "play-circle", 
-                title: "Fichas com GIFs", 
-                desc: "Monte treinos visuais. Ao clicar no exercício, veja um GIF da execução correta, músculos alvo e dicas de mestre." 
-            },
-            { 
-                icon: "timer", 
-                title: "Ferramentas Úteis", 
-                desc: "Use o Cronômetro de descanso, acompanhe suas Medidas Corporais e marque seu Checklist diário de hábitos." 
-            },
-            { 
-                icon: "calendar-check", 
-                title: "Diário de Evolução", 
-                desc: "O clássico calendário para marcar Treino, Falta ou Descanso, agora com gráficos detalhados de peso e frequência." 
-            }
-        ];
-
-        const featuresHtml = features.map(f => `
-            <div class="flex gap-4 p-4 rounded-2xl bg-surface border border-bordercol hover:border-brand transition-colors">
-                <div class="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand flex-shrink-0">
-                    <i data-lucide="${f.icon}" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <h4 class="text-txt-main font-bold text-sm mb-1">${escapeHtml(f.title)}</h4>
-                    <p class="text-txt-dim text-xs leading-relaxed">${escapeHtml(f.desc)}</p>
-                </div>
-            </div>
-        `).join("");
-
-        modal.innerHTML = `
-            <div class="bg-app w-full max-w-md rounded-3xl border border-bordercol shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-                <div class="p-6 border-b border-bordercol bg-app">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-xl font-bold text-txt-main flex items-center gap-2">
-                            <i data-lucide="sparkles" class="text-brand"></i> Novidades
-                        </h3>
-                        <button onclick="app.toggleFeatures()" class="p-2 rounded-full bg-surface hover:bg-bordercol text-txt-dim hover:text-brand border border-bordercol transition-colors">
-                            <i data-lucide="x" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                    <p class="text-txt-dim text-sm">O GymDaily está mais completo do que nunca.</p>
-                </div>
-                <div class="p-4 overflow-y-auto custom-scrollbar space-y-3 bg-app">
-                    ${featuresHtml}
-                </div>
-                <div class="p-4 border-t border-bordercol bg-app">
-                    <button onclick="app.toggleFeatures()" class="w-full bg-brand hover:bg-brand-hover text-white py-3.5 rounded-xl font-bold transition-all active:scale-95">
-                        Começar a usar
-                    </button>
-                </div>
-            </div>
-        `;
-        root.appendChild(modal);
-        lucide.createIcons();
-      }
-
-      function renderFeaturesModal(root) {
-        const modal = document.createElement("div");
         modal.className =
           "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200";
 
+        // --- LISTA ATUALIZADA E COMPLETA ---
         const features = [
           {
+            id: "daily",
             icon: "calendar-check",
-            title: "Registro Diário",
-            desc: "Marque seus dias.",
+            title: "Diário de Treino",
+            desc: "Gerencie sua frequência e histórico.",
+            details:
+              "O coração do app. Marque seus dias como 'Treino', 'Descanso' ou 'Falta'. Ao registrar um treino, você seleciona a ficha usada, anota as cargas, como se sentiu e pode até salvar uma foto do shape do dia para comparar sua evolução futura.",
           },
           {
+            id: "routines",
             icon: "clipboard-list",
-            title: "Fichas",
-            desc: "Crie treinos personalizados.",
+            title: "Montagem de Fichas",
+            desc: "Crie treinos ABC, ABCD ou personalizados.",
+            details:
+              "Liberdade total para montar seu treino. Crie rotinas ilimitadas (ex: 'Treino de Força', 'Adaptação'). Adicione exercícios específicos para cada dia da semana, reordene a lista e edite séries e repetições a qualquer momento.",
           },
-          { icon: "play-circle", title: "GIFs", desc: "Aprenda a execução." },
           {
-            icon: "bar-chart-3",
-            title: "Carga",
-            desc: "Controle sua evolução.",
+            id: "gifs",
+            icon: "play-circle",
+            title: "Biblioteca Visual (GIFs)",
+            desc: "Aprenda a execução correta.",
+            details:
+              "Nunca mais fique na dúvida na academia. Ao clicar em qualquer exercício da sua ficha, você vê um GIF em alta qualidade da execução, lista de músculos trabalhados e 'Dicas de Mestre' para melhorar sua técnica e evitar lesões.",
           },
-          { icon: "save", title: "Backup", desc: "Seus dados seguros." },
-          { icon: "smartphone", title: "Mobile", desc: "Feito para celular." },
+          {
+            id: "diet",
+            icon: "utensils",
+            title: "Gestão de Dieta",
+            desc: "Planeje suas refeições e horários.",
+            details:
+              "Organize sua alimentação. Crie refeições (Café, Almoço, Janta...), defina o horário e liste os alimentos e quantidades. Se ativar as notificações, o app te avisa 15 minutos antes de cada refeição para você não esquecer de comer.",
+          },
+          {
+            id: "tools",
+            icon: "wrench",
+            title: "Ferramentas Úteis",
+            desc: "Cronômetro, Medidas e Checklist.",
+            details:
+              "Um canivete suíço para quem treina: Cronômetro para o descanso entre séries, Tabela de Medidas para registrar o crescimento de braço/perna/peito e um Checklist diário para marcar seus hábitos (Água, Creatina, Sono, Proteína).",
+          },
+          {
+            id: "cloud",
+            icon: "cloud",
+            title: "Backup na Nuvem",
+            desc: "Seus dados salvos no Google.",
+            details:
+              "Segurança total. Faça login com sua conta Google para sincronizar tudo na nuvem. Se você trocar de celular, formatar ou acessar pelo computador, suas fichas, histórico e dieta estarão lá, sãos e salvos.",
+          },
+          {
+            id: "ui",
+            icon: "moon",
+            title: "Personalização",
+            desc: "Temas Claro e Escuro.",
+            details:
+              "Escolha o visual que mais te agrada. O modo Dark economiza bateria e foca no conteúdo, enquanto o novo modo Light (Lavanda) oferece uma interface limpa e moderna com alto contraste.",
+          },
         ];
 
-        // CORREÇÃO AQUI: bg-surface e text-txt-main em vez de cores fixas
         const featuresHtml = features
           .map(
             (f) => `
-            <div class="flex gap-4 p-4 rounded-2xl bg-surface border border-bordercol hover:border-brand transition-colors">
-                <div class="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand flex-shrink-0">
-                    <i data-lucide="${f.icon}" class="w-5 h-5"></i>
+            <div onclick="app.toggleFeatureDetails('${
+              f.id
+            }')" class="group bg-surface border border-bordercol rounded-2xl overflow-hidden cursor-pointer hover:border-brand transition-all active:scale-[0.98] mb-3">
+                <div class="flex items-center gap-4 p-4">
+                    <div class="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand flex-shrink-0 group-hover:bg-brand group-hover:text-white transition-colors">
+                        <i data-lucide="${f.icon}" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-txt-main font-bold text-sm mb-0.5">${escapeHtml(
+                          f.title
+                        )}</h4>
+                        <p class="text-txt-dim text-xs">${escapeHtml(
+                          f.desc
+                        )}</p>
+                    </div>
+                    <i id="feature-icon-${
+                      f.id
+                    }" data-lucide="chevron-down" class="w-5 h-5 text-txt-dim transition-transform duration-300"></i>
                 </div>
-                <div>
-                    <h4 class="text-txt-main font-bold text-sm mb-1">${escapeHtml(
-                      f.title
-                    )}</h4>
-                    <p class="text-txt-dim text-xs leading-relaxed">${escapeHtml(
-                      f.desc
-                    )}</p>
+                
+                <div id="feature-details-${
+                  f.id
+                }" class="hidden bg-inputbg border-t border-bordercol p-4 animate-in fade-in slide-in-from-top-1">
+                    <p class="text-txt-main text-xs leading-relaxed opacity-80">
+                        ${escapeHtml(f.details)}
+                    </p>
                 </div>
             </div>
         `
@@ -2252,29 +2433,31 @@
 
         modal.innerHTML = `
             <div class="bg-app w-full max-w-md rounded-3xl border border-bordercol shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-                <div class="p-6 border-b border-bordercol bg-app">
+                <div class="p-6 border-b border-bordercol bg-surface z-10">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-xl font-bold text-txt-main flex items-center gap-2">
-                            <i data-lucide="sparkles" class="text-brand"></i> Funcionalidades
+                            <i data-lucide="sparkles" class="text-brand"></i> Novidades
                         </h3>
-                        <button onclick="app.toggleFeatures()" class="p-2 rounded-full bg-surface hover:bg-bordercol text-txt-dim hover:text-brand border border-bordercol transition-colors">
+                        <button onclick="app.toggleFeatures()" class="p-2 rounded-full bg-app hover:bg-bordercol text-txt-dim hover:text-brand border border-bordercol transition-colors">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
-                    <p class="text-txt-dim text-sm">O que o GymDaily faz por você.</p>
+                    <p class="text-txt-dim text-sm">Toque nos itens para ver os detalhes.</p>
                 </div>
-                <div class="p-4 overflow-y-auto custom-scrollbar space-y-3 bg-app">
+
+                <div class="p-4 overflow-y-auto custom-scrollbar bg-app">
                     ${featuresHtml}
                 </div>
-                <div class="p-4 border-t border-bordercol bg-app">
-                    <button onclick="app.toggleFeatures()" class="w-full bg-brand hover:bg-brand-hover text-white py-3.5 rounded-xl font-bold transition-all active:scale-95">
+
+                <div class="p-4 border-t border-bordercol bg-surface z-10">
+                    <button onclick="app.toggleFeatures()" class="w-full bg-brand hover:bg-brand-hover text-white py-3.5 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-brand/20">
                         Entendi, vamos treinar!
                     </button>
                 </div>
             </div>
         `;
         root.appendChild(modal);
-        lucide.createIcons(); // Importante para recarregar ícones
+        lucide.createIcons();
       }
 
       function renderExercisePicker(root) {
