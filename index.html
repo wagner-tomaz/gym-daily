@@ -18,39 +18,39 @@
     <style>
       :root {
         /* --- MODO ESCURO (Dark Mode - Tinted Purple) --- */
-        
+
         /* O segredo aqui: Não usamos preto puro (#000000) nem cinza neutro (#18181b).
            Usamos tons muito escuros de Violeta/Azul (Deep Violet Greys).
         */
 
         /* Fundo Geral: Um preto profundo com leve toque de berinjela/roxo noturno */
-        --bg-app: #0f0e13;       
-        
+        --bg-app: #0f0e13;
+
         /* Superfície (Cards): Um cinza-chumbo, mas com base roxa */
-        --bg-surface: #1a1923;   
-        
+        --bg-surface: #1a1923;
+
         /* Inputs: Um pouco mais escuro que a superfície */
-        --bg-input: #13121b;     
-        
+        --bg-input: #13121b;
+
         /* Bordas: Roxo acinzentado muito discreto */
-        --border-color: #2e2b3b; 
+        --border-color: #2e2b3b;
 
         /* Textos */
-        --text-main: #f3f0ff;    /* Branco com 1% de roxo (evita o brilho excessivo do branco puro) */
-        --text-muted: #a39eb5;   /* Cinza claro "lavanda" */
-        --text-dim: #716d82;     /* Cinza escuro "ametista" */
+        --text-main: #f3f0ff; /* Branco com 1% de roxo (evita o brilho excessivo do branco puro) */
+        --text-muted: #a39eb5; /* Cinza claro "lavanda" */
+        --text-dim: #716d82; /* Cinza escuro "ametista" */
 
         /* --- MARCA (O Roxo Principal - Mantido Vibrante) --- */
-        --primary: #9333ea;          
-        --primary-hover: #7e22ce;    
-        --primary-faint: rgba(147, 51, 234, 0.15); 
+        --primary: #9333ea;
+        --primary-hover: #7e22ce;
+        --primary-faint: rgba(147, 51, 234, 0.15);
 
         /* --- STATUS (Mantidos com leve desaturação para casar com o fundo) --- */
-        --success: #16a34a;      
+        --success: #16a34a;
         --success-faint: rgba(22, 163, 74, 0.15);
-        --danger: #dc2626;       
+        --danger: #dc2626;
         --danger-faint: rgba(220, 38, 38, 0.15);
-        --info: #2563eb;         
+        --info: #2563eb;
         --info-faint: rgba(37, 99, 235, 0.15);
       }
 
@@ -58,40 +58,54 @@
       /* --- MODO CLARO (Legibilidade Total + Identidade Roxa) --- */
       .light-mode {
         /* Fundo: Um tom "Gelo/Lilás" muito suave, quase branco */
-        --bg-app: #f5f3ff;       
-        
+        --bg-app: #f5f3ff;
+
         /* Superfície (Cards): Branco PURO para destacar do fundo */
-        --bg-surface: #ffffff;   
-        
+        --bg-surface: #ffffff;
+
         /* Inputs: Um cinza muito leve para diferenciar do branco */
-        --bg-input: #f4f4f5;     
-        
+        --bg-input: #f4f4f5;
+
         /* Bordas: Roxo bem clarinho para delimitar áreas sem pesar */
-        --border-color: #ddd6fe; 
+        --border-color: #ddd6fe;
 
         /* Textos: AQUI ESTÁ O SEGREDO DA LEITURA */
-        --text-main: #2e1065;    /* Roxo muito escuro (quase preto) */
-        --text-muted: #5b21b6;   /* Roxo médio para textos secundários */
-        --text-dim: #7c3aed;     /* Roxo vibrante para ícones/detalhes */
-        
+        --text-main: #2e1065; /* Roxo muito escuro (quase preto) */
+        --text-muted: #5b21b6; /* Roxo médio para textos secundários */
+        --text-dim: #7c3aed; /* Roxo vibrante para ícones/detalhes */
+
         /* As cores de status e marca continuam as mesmas do root */
       }
 
       /* Reset e Configurações Base */
-      html, body {
+      html,
+      body {
         overscroll-behavior-y: none;
         background-color: var(--bg-app);
         color: var(--text-main);
         -webkit-tap-highlight-color: transparent;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        transition: background-color 0.3s ease, color 0.3s ease,
+          border-color 0.3s ease;
       }
 
-      ::-webkit-scrollbar { width: 6px; }
-      ::-webkit-scrollbar-track { background: var(--bg-surface); }
-      ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
-      
-      input, select, textarea { font-size: 16px !important; }
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg-surface);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 3px;
+      }
+
+      input,
+      select,
+      textarea {
+        font-size: 16px !important;
+      }
     </style>
 
     <script>
@@ -202,6 +216,8 @@
 
       // === ESTADO GLOBAL ===
       const state = {
+        showFeaturesModal: !localStorage.getItem("gymHasVisited"),
+
         theme: localStorage.getItem("gymTheme") || "dark",
         diet: JSON.parse(localStorage.getItem("gymDiet")) || [],
         showDietModal: false,
@@ -829,8 +845,14 @@
           app.render();
         },
         toggleFeatures: () => {
-          state.showFeaturesModal = !state.showFeaturesModal;
-          app.render();
+            state.showFeaturesModal = !state.showFeaturesModal;
+            
+            // Se estiver fechando, marca que o usuário já viu para não mostrar automaticamente de novo
+            if (!state.showFeaturesModal) {
+                localStorage.setItem("gymHasVisited", "true");
+            }
+            
+            app.render();
         },
         openImage: (name, url) => {
           state.viewingImage = { name, url };
@@ -1200,41 +1222,60 @@
       };
 
       function renderCalendar(root) {
-        const { daysInMonth, startingDayOfWeek } = getDaysInMonth(state.currentDate);
+        const { daysInMonth, startingDayOfWeek } = getDaysInMonth(
+          state.currentDate
+        );
         let gridHtml = "";
-        for (let i = 0; i < startingDayOfWeek; i++) gridHtml += '<div class="aspect-square"></div>';
+        for (let i = 0; i < startingDayOfWeek; i++)
+          gridHtml += '<div class="aspect-square"></div>';
 
         for (let i = 1; i <= daysInMonth; i++) {
-          const dateKey = formatDateKey(state.currentDate.getFullYear(), state.currentDate.getMonth(), i);
+          const dateKey = formatDateKey(
+            state.currentDate.getFullYear(),
+            state.currentDate.getMonth(),
+            i
+          );
           const entry = state.gymData[dateKey];
-          
-          let classes = "aspect-square rounded-xl flex flex-col items-center justify-center font-bold text-sm transition-all active:scale-95 border ";
+
+          let classes =
+            "aspect-square rounded-xl flex flex-col items-center justify-center font-bold text-sm transition-all active:scale-95 border ";
           let style = "";
-          
+
           if (entry) {
-            if (entry.status === "rest") { classes += "bg-status-info text-white border-transparent shadow-sm"; }
-            else if (entry.status === "missed" || entry.attended === false) { classes += "bg-status-danger text-white border-transparent shadow-sm"; }
-            else if (entry.status === "attended" || entry.attended) { classes += "bg-status-success text-white border-transparent shadow-sm"; }
+            if (entry.status === "rest") {
+              classes +=
+                "bg-status-info text-white border-transparent shadow-sm";
+            } else if (entry.status === "missed" || entry.attended === false) {
+              classes +=
+                "bg-status-danger text-white border-transparent shadow-sm";
+            } else if (entry.status === "attended" || entry.attended) {
+              classes +=
+                "bg-status-success text-white border-transparent shadow-sm";
+            }
           } else {
             // Dias vazios: Fundo da tela (bg-app) para contraste com o card branco
-            classes += "bg-app text-txt-main border-bordercol hover:border-brand";
+            classes +=
+              "bg-app text-txt-main border-bordercol hover:border-brand";
           }
           gridHtml += `<button onclick="app.dayClick(${i})" class="${classes}" style="${style}">${i}</button>`;
         }
 
         // Ícones
-        const themeIcon = state.theme === 'dark' ? `<i data-lucide="sun" class="w-4 h-4"></i>` : `<i data-lucide="moon" class="w-4 h-4"></i>`;
-        
+        const themeIcon =
+          state.theme === "dark"
+            ? `<i data-lucide="sun" class="w-4 h-4"></i>`
+            : `<i data-lucide="moon" class="w-4 h-4"></i>`;
+
         // Botão de Tema (Agora bg-surface para ficar "saltado")
         const themeBtn = `<button onclick="app.toggleTheme()" class="w-9 h-9 flex items-center justify-center rounded-full bg-surface border border-bordercol text-txt-dim hover:text-brand hover:border-brand transition-colors active:scale-95 shadow-sm">${themeIcon}</button>`;
-        
+
         // Botão de Info (Também bg-surface)
         const infoBtn = `<button onclick="app.toggleFeatures()" class="w-9 h-9 flex items-center justify-center rounded-full bg-surface text-brand border border-bordercol hover:border-brand transition-colors active:scale-95 shadow-sm"><i data-lucide="info" class="w-5 h-5"></i></button>`;
 
         const googleIcon = `<svg class="w-4 h-4" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>`;
 
         let headerRightHtml = "";
-        
+
         if (!state.isLogged) {
           // Deslogado: [Entrar] [Tema] [Info]
           headerRightHtml = `
@@ -1252,14 +1293,23 @@
             <div class="flex items-center gap-2">
                 <div class="relative z-50">
                     <button onclick="app.toggleProfileMenu()" class="relative flex items-center active:scale-95 transition-transform">
-                        <img src="${state.userPhoto || "https://ui-avatars.com/api/?name=User"}" class="w-9 h-9 rounded-full border-2 border-brand cursor-pointer hover:opacity-80 transition-opacity block shadow-sm">
+                        <img src="${
+                          state.userPhoto ||
+                          "https://ui-avatars.com/api/?name=User"
+                        }" class="w-9 h-9 rounded-full border-2 border-brand cursor-pointer hover:opacity-80 transition-opacity block shadow-sm">
                         <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-status-success border-2 border-surface rounded-full"></div>
                     </button>
-                    ${state.showProfileMenu ? `
+                    ${
+                      state.showProfileMenu
+                        ? `
                         <div class="absolute right-0 top-12 w-64 bg-surface border border-bordercol rounded-2xl p-4 flex flex-col items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-200 shadow-xl z-50">
-                            <img src="${state.userPhoto}" class="w-16 h-16 rounded-full border-2 border-bordercol">
+                            <img src="${
+                              state.userPhoto
+                            }" class="w-16 h-16 rounded-full border-2 border-bordercol">
                             <div class="text-center mb-2">
-                                <p class="text-txt-main font-bold text-sm">${escapeHtml(state.userName)}</p>
+                                <p class="text-txt-main font-bold text-sm">${escapeHtml(
+                                  state.userName
+                                )}</p>
                                 <p class="text-txt-dim text-xs">Conta Google Conectada</p>
                             </div>
                             <button onclick="window.logoutGoogle()" class="w-full py-2 bg-status-danger-faint hover:bg-status-danger/20 text-status-danger text-xs font-bold rounded-lg border border-status-danger/20 transition-colors flex items-center justify-center gap-2">
@@ -1267,7 +1317,9 @@
                             </button>
                         </div>
                         <div class="fixed inset-0 z-40" onclick="app.toggleProfileMenu()"></div>
-                    ` : ""}
+                    `
+                        : ""
+                    }
                 </div>
                 ${themeBtn}
                 ${infoBtn}
@@ -1287,12 +1339,19 @@
           <div class="bg-surface rounded-3xl p-4 mb-3 border border-bordercol shadow-sm">
             <div class="flex items-center justify-between mb-4">
               <button onclick="app.prevMonth()" class="p-2 rounded-full bg-app hover:bg-bordercol text-txt-dim hover:text-brand border border-bordercol transition-colors"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
-              <h2 class="text-lg font-bold text-txt-main capitalize">${monthNames[state.currentDate.getMonth()]} <span class="text-brand">${state.currentDate.getFullYear()}</span></h2>
+              <h2 class="text-lg font-bold text-txt-main capitalize">${
+                monthNames[state.currentDate.getMonth()]
+              } <span class="text-brand">${state.currentDate.getFullYear()}</span></h2>
               <button onclick="app.nextMonth()" class="p-2 rounded-full bg-app hover:bg-bordercol text-txt-dim hover:text-brand border border-bordercol transition-colors"><i data-lucide="chevron-right" class="w-6 h-6"></i></button>
             </div>
             
             <div class="grid grid-cols-7 gap-2 mb-2">
-                ${dayNames.map(d => `<div class="text-center text-txt-dim font-bold text-xs uppercase tracking-wider">${d}</div>`).join("")}
+                ${dayNames
+                  .map(
+                    (d) =>
+                      `<div class="text-center text-txt-dim font-bold text-xs uppercase tracking-wider">${d}</div>`
+                  )
+                  .join("")}
             </div>
             
             <div class="grid grid-cols-7 gap-2">
@@ -1942,18 +2001,30 @@
           root.innerHTML = `<div class="mb-6 pt-2"><h1 class="text-2xl font-bold text-txt-main mb-1 flex items-center gap-2"><i data-lucide="wrench" class="text-brand"></i> Ferramentas</h1><p class="text-txt-dim text-sm">Utilitários</p></div><div class="grid grid-cols-1 gap-3"><button onclick="state.activeTool='timer'; app.render()" class="bg-surface hover:bg-app border border-bordercol p-5 rounded-2xl flex items-center gap-4 text-left transition-all active:scale-95 group shadow-sm"><div class="w-12 h-12 rounded-full bg-brand/10 text-brand flex items-center justify-center border border-brand/20 group-hover:border-brand transition-colors"><i data-lucide="timer" class="w-6 h-6"></i></div><div><h3 class="text-txt-main font-bold text-base">Cronômetro</h3><p class="text-txt-dim text-xs mt-0.5">Para descanso</p></div><i data-lucide="chevron-right" class="ml-auto text-txt-dim"></i></button><button onclick="state.activeTool='measurepy'; app.render()" class="bg-surface hover:bg-app border border-bordercol p-5 rounded-2xl flex items-center gap-4 text-left transition-all active:scale-95 group shadow-sm"><div class="w-12 h-12 rounded-full bg-status-success/10 text-status-success flex items-center justify-center border border-status-success/20 group-hover:border-status-success transition-colors"><i data-lucide="ruler" class="w-6 h-6"></i></div><div><h3 class="text-txt-main font-bold text-base">Medidas</h3><p class="text-txt-dim text-xs mt-0.5">Seu crescimento</p></div><i data-lucide="chevron-right" class="ml-auto text-txt-dim"></i></button><button onclick="state.activeTool='checklist'; app.render()" class="bg-surface hover:bg-app border border-bordercol p-5 rounded-2xl flex items-center gap-4 text-left transition-all active:scale-95 group shadow-sm"><div class="w-12 h-12 rounded-full bg-status-info/10 text-status-info flex items-center justify-center border border-status-info/20 group-hover:border-status-info transition-colors"><i data-lucide="check-square" class="w-6 h-6"></i></div><div><h3 class="text-txt-main font-bold text-base">Checklist</h3><p class="text-txt-dim text-xs mt-0.5">Água, Creatina...</p></div><i data-lucide="chevron-right" class="ml-auto text-txt-dim"></i></button></div>`;
           return;
         }
-        const header = `<div class="flex items-center gap-3 mb-6 pt-2"><button onclick="state.activeTool=null; app.render()" class="p-2 rounded-full bg-surface hover:bg-bordercol border border-bordercol text-txt-dim hover:text-brand transition-colors"><i data-lucide="arrow-left" class="w-5 h-5"></i></button><h1 class="text-xl font-bold text-txt-main">${state.activeTool === "timer" ? "Cronômetro" : state.activeTool === "measurepy" ? "Medidas" : "Checklist"}</h1></div>`;
+        const header = `<div class="flex items-center gap-3 mb-6 pt-2"><button onclick="state.activeTool=null; app.render()" class="p-2 rounded-full bg-surface hover:bg-bordercol border border-bordercol text-txt-dim hover:text-brand transition-colors"><i data-lucide="arrow-left" class="w-5 h-5"></i></button><h1 class="text-xl font-bold text-txt-main">${
+          state.activeTool === "timer"
+            ? "Cronômetro"
+            : state.activeTool === "measurepy"
+            ? "Medidas"
+            : "Checklist"
+        }</h1></div>`;
 
         if (state.activeTool === "timer") {
-          const mins = Math.floor(state.timerTime / 60).toString().padStart(2, "0");
+          const mins = Math.floor(state.timerTime / 60)
+            .toString()
+            .padStart(2, "0");
           const secs = (state.timerTime % 60).toString().padStart(2, "0");
           const dashOffset = 283 - (state.timerTime / state.timerTotal) * 283;
-          const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-          
+          const strokeColor = getComputedStyle(document.documentElement)
+            .getPropertyValue("--primary")
+            .trim();
+
           // CORREÇÃO DOS BOTÕES DO TIMER:
           // bg-surface (branco no light) e text-txt-main (preto no light)
-          const btnBaseClass = "py-3 border rounded-xl font-bold transition-all shadow-sm ";
-          const btnInactiveClass = "bg-surface border-bordercol text-txt-dim hover:text-brand hover:border-brand";
+          const btnBaseClass =
+            "py-3 border rounded-xl font-bold transition-all shadow-sm ";
+          const btnInactiveClass =
+            "bg-surface border-bordercol text-txt-dim hover:text-brand hover:border-brand";
           const btnActiveClass = "bg-brand text-white border-brand"; // Esse sempre é roxo com texto branco
 
           root.innerHTML = `${header}
@@ -1968,8 +2039,9 @@
                     </div>
                 </div>
                 <div class="flex gap-4 mb-8">
-                    ${state.timerRunning 
-                        ? `<button onclick="app.stopTimer()" class="w-16 h-16 rounded-full bg-status-danger/10 text-status-danger border-2 border-status-danger flex items-center justify-center hover:bg-status-danger hover:text-white transition-all shadow-lg"><i data-lucide="pause" class="w-8 h-8"></i></button>` 
+                    ${
+                      state.timerRunning
+                        ? `<button onclick="app.stopTimer()" class="w-16 h-16 rounded-full bg-status-danger/10 text-status-danger border-2 border-status-danger flex items-center justify-center hover:bg-status-danger hover:text-white transition-all shadow-lg"><i data-lucide="pause" class="w-8 h-8"></i></button>`
                         : `<button onclick="app.startTimer()" class="w-16 h-16 rounded-full bg-brand text-white flex items-center justify-center hover:bg-brand-hover transition-all shadow-lg shadow-brand/20"><i data-lucide="play" class="w-8 h-8 ml-1"></i></button>`
                     }
                 </div>
@@ -1987,27 +2059,155 @@
             </div>`;
         } else if (state.activeTool === "measurepy") {
           const m = state.bodyMeasurements;
-          window.updateMeasure = (field, value) => { state.bodyMeasurements[field] = value; saveToStorage(); };
+          window.updateMeasure = (field, value) => {
+            state.bodyMeasurements[field] = value;
+            saveToStorage();
+          };
           root.innerHTML = `${header}<div class="space-y-6"><div class="bg-surface p-4 rounded-2xl border border-bordercol shadow-sm"><h3 class="text-txt-dim text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2"><i data-lucide="biceps-flexed" class="w-4 h-4"></i> Braços</h3><div class="grid grid-cols-2 gap-4"><div><label class="text-xs text-txt-muted mb-1 block">Esq.</label><input type="number" value="${m.armLeft}" oninput="updateMeasure('armLeft', this.value)" class="w-full p-3 bg-inputbg border border-bordercol rounded-xl text-txt-main font-bold focus:border-brand outline-none" placeholder="0"></div><div><label class="text-xs text-txt-muted mb-1 block">Dir.</label><input type="number" value="${m.armRight}" oninput="updateMeasure('armRight', this.value)" class="w-full p-3 bg-inputbg border border-bordercol rounded-xl text-txt-main font-bold focus:border-brand outline-none" placeholder="0"></div></div></div><div class="bg-surface p-4 rounded-2xl border border-bordercol shadow-sm"><h3 class="text-txt-dim text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2"><i data-lucide="shirt" class="w-4 h-4"></i> Tronco</h3><div class="grid grid-cols-2 gap-4"><div><label class="text-xs text-txt-muted mb-1 block">Peito</label><input type="number" value="${m.chest}" oninput="updateMeasure('chest', this.value)" class="w-full p-3 bg-inputbg border border-bordercol rounded-xl text-txt-main font-bold focus:border-brand outline-none" placeholder="0"></div><div><label class="text-xs text-txt-muted mb-1 block">Cintura</label><input type="number" value="${m.waist}" oninput="updateMeasure('waist', this.value)" class="w-full p-3 bg-inputbg border border-bordercol rounded-xl text-txt-main font-bold focus:border-brand outline-none" placeholder="0"></div></div></div><div class="bg-surface p-4 rounded-2xl border border-bordercol shadow-sm"><h3 class="text-txt-dim text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-2"><i data-lucide="footprints" class="w-4 h-4"></i> Pernas</h3><div class="grid grid-cols-2 gap-4 mb-3"><div><label class="text-xs text-txt-muted mb-1 block">Coxa Esq.</label><input type="number" value="${m.legLeft}" oninput="updateMeasure('legLeft', this.value)" class="w-full p-3 bg-inputbg border border-bordercol rounded-xl text-txt-main font-bold focus:border-brand outline-none" placeholder="0"></div><div><label class="text-xs text-txt-muted mb-1 block">Coxa Dir.</label><input type="number" value="${m.legRight}" oninput="updateMeasure('legRight', this.value)" class="w-full p-3 bg-inputbg border border-bordercol rounded-xl text-txt-main font-bold focus:border-brand outline-none" placeholder="0"></div></div><div><label class="text-xs text-txt-muted mb-1 block">Panturrilha</label><input type="number" value="${m.calves}" oninput="updateMeasure('calves', this.value)" class="w-full p-3 bg-inputbg border border-bordercol rounded-xl text-txt-main font-bold focus:border-brand outline-none" placeholder="0"></div></div><p class="text-center text-txt-dim text-xs pt-4">Salvo automaticamente.</p></div>`;
         } else if (state.activeTool === "checklist") {
           const c = state.dailyCheck;
-          window.toggleCheck = (key) => { state.dailyCheck[key] = !state.dailyCheck[key]; saveToStorage(); app.render(); };
-          const items = [{ key: "creatine", label: "Tomei Creatina", icon: "zap", color: "status-info" }, { key: "water", label: "Bebi 3L de Água", icon: "droplets", color: "status-info" }, { key: "protein", label: "Bati a Proteína", icon: "beef", color: "status-danger" }, { key: "sleep", label: "Dormi 7h+", icon: "moon", color: "brand" }];
-          const listHtml = items.map(item => {
-            const checked = c[item.key];
-            const colorVar = `var(--${item.color.replace('brand', 'primary').replace('status-', '')})`; 
-            const style = checked ? `border-color: ${colorVar}; background-color: ${colorVar}20;` : "";
-            // Correção aqui: border-bordercol quando não checado
-            return `<button onclick="toggleCheck('${item.key}')" class="w-full p-5 rounded-2xl border flex items-center justify-between transition-all active:scale-95 group mb-3 shadow-sm ${!checked ? 'border-bordercol bg-surface' : ''}" style="${style}"><div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full bg-inputbg flex items-center justify-center border border-bordercol"><i data-lucide="${item.icon}" class="w-5 h-5" style="color: ${checked ? colorVar : 'var(--text-dim)'}"></i></div><span class="font-bold text-base ${checked ? "text-txt-main" : "text-txt-dim"}">${item.label}</span></div><div class="w-6 h-6 rounded-full border-2 flex items-center justify-center" style="border-color: ${checked ? colorVar : 'var(--border-color)'}; background-color: ${checked ? colorVar : 'transparent'}">${checked ? '<i data-lucide="check" class="w-4 h-4 text-black font-bold"></i>' : ""}</div></button>`;
-          }).join("");
+          window.toggleCheck = (key) => {
+            state.dailyCheck[key] = !state.dailyCheck[key];
+            saveToStorage();
+            app.render();
+          };
+          const items = [
+            {
+              key: "creatine",
+              label: "Tomei Creatina",
+              icon: "zap",
+              color: "status-info",
+            },
+            {
+              key: "water",
+              label: "Bebi 3L de Água",
+              icon: "droplets",
+              color: "status-info",
+            },
+            {
+              key: "protein",
+              label: "Bati a Proteína",
+              icon: "beef",
+              color: "status-danger",
+            },
+            { key: "sleep", label: "Dormi 7h+", icon: "moon", color: "brand" },
+          ];
+          const listHtml = items
+            .map((item) => {
+              const checked = c[item.key];
+              const colorVar = `var(--${item.color
+                .replace("brand", "primary")
+                .replace("status-", "")})`;
+              const style = checked
+                ? `border-color: ${colorVar}; background-color: ${colorVar}20;`
+                : "";
+              // Correção aqui: border-bordercol quando não checado
+              return `<button onclick="toggleCheck('${
+                item.key
+              }')" class="w-full p-5 rounded-2xl border flex items-center justify-between transition-all active:scale-95 group mb-3 shadow-sm ${
+                !checked ? "border-bordercol bg-surface" : ""
+              }" style="${style}"><div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full bg-inputbg flex items-center justify-center border border-bordercol"><i data-lucide="${
+                item.icon
+              }" class="w-5 h-5" style="color: ${
+                checked ? colorVar : "var(--text-dim)"
+              }"></i></div><span class="font-bold text-base ${
+                checked ? "text-txt-main" : "text-txt-dim"
+              }">${
+                item.label
+              }</span></div><div class="w-6 h-6 rounded-full border-2 flex items-center justify-center" style="border-color: ${
+                checked ? colorVar : "var(--border-color)"
+              }; background-color: ${checked ? colorVar : "transparent"}">${
+                checked
+                  ? '<i data-lucide="check" class="w-4 h-4 text-black font-bold"></i>'
+                  : ""
+              }</div></button>`;
+            })
+            .join("");
           root.innerHTML = `${header}<div class="pt-2"><div class="mb-6 p-4 bg-brand/10 border border-brand/20 rounded-xl"><p class="text-brand text-xs text-center">Esses itens reiniciam sua disciplina diária.</p></div>${listHtml}</div>`;
         }
       }
 
       function renderFeaturesModal(root) {
         const modal = document.createElement("div");
+        modal.className = "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200";
+        
+        const features = [
+            { 
+                icon: "cloud", 
+                title: "Sincronização na Nuvem", 
+                desc: "Faça login com o Google para salvar seus dados. Acesse sua ficha e dieta de qualquer dispositivo sem perder nada." 
+            },
+            { 
+                icon: "utensils", 
+                title: "Planejamento Alimentar", 
+                desc: "Nova aba de Dieta! Crie refeições ilimitadas, adicione alimentos, quantidades e receba lembretes para comer." 
+            },
+            { 
+                icon: "moon", 
+                title: "Temas Claro & Escuro", 
+                desc: "Personalize o visual do app. Alterne entre o modo Dark (foco total) e o novo modo Light (Lavanda) quando quiser." 
+            },
+            { 
+                icon: "play-circle", 
+                title: "Fichas com GIFs", 
+                desc: "Monte treinos visuais. Ao clicar no exercício, veja um GIF da execução correta, músculos alvo e dicas de mestre." 
+            },
+            { 
+                icon: "timer", 
+                title: "Ferramentas Úteis", 
+                desc: "Use o Cronômetro de descanso, acompanhe suas Medidas Corporais e marque seu Checklist diário de hábitos." 
+            },
+            { 
+                icon: "calendar-check", 
+                title: "Diário de Evolução", 
+                desc: "O clássico calendário para marcar Treino, Falta ou Descanso, agora com gráficos detalhados de peso e frequência." 
+            }
+        ];
+
+        const featuresHtml = features.map(f => `
+            <div class="flex gap-4 p-4 rounded-2xl bg-surface border border-bordercol hover:border-brand transition-colors">
+                <div class="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand flex-shrink-0">
+                    <i data-lucide="${f.icon}" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h4 class="text-txt-main font-bold text-sm mb-1">${escapeHtml(f.title)}</h4>
+                    <p class="text-txt-dim text-xs leading-relaxed">${escapeHtml(f.desc)}</p>
+                </div>
+            </div>
+        `).join("");
+
+        modal.innerHTML = `
+            <div class="bg-app w-full max-w-md rounded-3xl border border-bordercol shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                <div class="p-6 border-b border-bordercol bg-app">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xl font-bold text-txt-main flex items-center gap-2">
+                            <i data-lucide="sparkles" class="text-brand"></i> Novidades
+                        </h3>
+                        <button onclick="app.toggleFeatures()" class="p-2 rounded-full bg-surface hover:bg-bordercol text-txt-dim hover:text-brand border border-bordercol transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <p class="text-txt-dim text-sm">O GymDaily está mais completo do que nunca.</p>
+                </div>
+                <div class="p-4 overflow-y-auto custom-scrollbar space-y-3 bg-app">
+                    ${featuresHtml}
+                </div>
+                <div class="p-4 border-t border-bordercol bg-app">
+                    <button onclick="app.toggleFeatures()" class="w-full bg-brand hover:bg-brand-hover text-white py-3.5 rounded-xl font-bold transition-all active:scale-95">
+                        Começar a usar
+                    </button>
+                </div>
+            </div>
+        `;
+        root.appendChild(modal);
+        lucide.createIcons();
+      }
+
+      function renderFeaturesModal(root) {
+        const modal = document.createElement("div");
         modal.className =
           "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200";
+
         const features = [
           {
             icon: "calendar-check",
@@ -2028,47 +2228,27 @@
           { icon: "save", title: "Backup", desc: "Seus dados seguros." },
           { icon: "smartphone", title: "Mobile", desc: "Feito para celular." },
         ];
-        const featuresHtml = features
-          .map(
-            (f) =>
-              `<div class="flex gap-4 p-4 rounded-2xl bg-black/40 border border-bordercol/50 hover:border-brand/30 transition-colors"><div class="w-10 h-10 rounded-full bg-brand-faint flex items-center justify-center text-brand flex-shrink-0"><i data-lucide="${
-                f.icon
-              }" class="w-5 h-5"></i></div><div><h4 class="text-txt-main font-bold text-sm mb-1">${escapeHtml(
-                f.title
-              )}</h4><p class="text-txt-dim text-xs leading-relaxed">${escapeHtml(
-                f.desc
-              )}</p></div></div>`
-          )
-          .join("");
-        modal.innerHTML = `<div class="bg-surface w-full max-w-md rounded-3xl border border-bordercol shadow-none overflow-hidden flex flex-col max-h-[85vh]"><div class="p-6 border-b border-bordercol bg-surface"><div class="flex justify-between items-center mb-2"><h3 class="text-xl font-bold text-txt-main flex items-center gap-2"><i data-lucide="sparkles" class="text-brand"></i> Funcionalidades</h3><button onclick="app.toggleFeatures()" class="p-2 rounded-full bg-bordercol hover:bg-zinc-700 text-txt-dim hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button></div><p class="text-txt-dim text-sm">O que o GymDaily faz por você.</p></div><div class="p-4 overflow-y-auto custom-scrollbar space-y-3">${featuresHtml}</div><div class="p-4 border-t border-bordercol bg-surface"><button onclick="app.toggleFeatures()" class="w-full bg-brand hover:bg-brand-hover text-white py-3.5 rounded-xl font-bold transition-all active:scale-95">Entendi, vamos treinar!</button></div></div>`;
-        root.appendChild(modal);
-      }
-
-      function renderFeaturesModal(root) {
-        const modal = document.createElement("div");
-        modal.className = "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200";
-        
-        const features = [
-            { icon: "calendar-check", title: "Registro Diário", desc: "Marque seus dias." }, 
-            { icon: "clipboard-list", title: "Fichas", desc: "Crie treinos personalizados." }, 
-            { icon: "play-circle", title: "GIFs", desc: "Aprenda a execução." }, 
-            { icon: "bar-chart-3", title: "Carga", desc: "Controle sua evolução." }, 
-            { icon: "save", title: "Backup", desc: "Seus dados seguros." }, 
-            { icon: "smartphone", title: "Mobile", desc: "Feito para celular." }
-        ];
 
         // CORREÇÃO AQUI: bg-surface e text-txt-main em vez de cores fixas
-        const featuresHtml = features.map(f => `
+        const featuresHtml = features
+          .map(
+            (f) => `
             <div class="flex gap-4 p-4 rounded-2xl bg-surface border border-bordercol hover:border-brand transition-colors">
                 <div class="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand flex-shrink-0">
                     <i data-lucide="${f.icon}" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <h4 class="text-txt-main font-bold text-sm mb-1">${escapeHtml(f.title)}</h4>
-                    <p class="text-txt-dim text-xs leading-relaxed">${escapeHtml(f.desc)}</p>
+                    <h4 class="text-txt-main font-bold text-sm mb-1">${escapeHtml(
+                      f.title
+                    )}</h4>
+                    <p class="text-txt-dim text-xs leading-relaxed">${escapeHtml(
+                      f.desc
+                    )}</p>
                 </div>
             </div>
-        `).join("");
+        `
+          )
+          .join("");
 
         modal.innerHTML = `
             <div class="bg-app w-full max-w-md rounded-3xl border border-bordercol shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
@@ -2174,7 +2354,7 @@
     </script>
 
     <!-- FIREBASE -->
-     <script type="module">
+    <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
       import {
         getAuth,
@@ -2249,8 +2429,14 @@
           localStorage.setItem("gymTrackerData", JSON.stringify(state.gymData));
           localStorage.setItem("gymRoutines", JSON.stringify(state.routines));
           localStorage.setItem("gymDiet", JSON.stringify(state.diet));
-          localStorage.setItem("gymChecklist", JSON.stringify(state.dailyCheck));
-          localStorage.setItem("gymMeasurements", JSON.stringify(state.bodyMeasurements));
+          localStorage.setItem(
+            "gymChecklist",
+            JSON.stringify(state.dailyCheck)
+          );
+          localStorage.setItem(
+            "gymMeasurements",
+            JSON.stringify(state.bodyMeasurements)
+          );
           localStorage.setItem("gymTheme", state.theme);
           return;
         }
@@ -2287,30 +2473,43 @@
             // Busca dados do Firestore
             const docRef = doc(db, "users", user.uid);
             try {
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                  const data = docSnap.data();
-                  
-                  // Carrega dados da nuvem para o App
-                  state.gymData = data.gymData || {};
-                  state.routines = data.routines || [];
-                  state.diet = data.diet || [];
-                  state.dailyCheck = data.dailyCheck || { creatine: false, water: false, sleep: false, protein: false };
-                  state.bodyMeasurements = data.bodyMeasurements || { armRight: "", armLeft: "", legRight: "", legLeft: "", chest: "", waist: "", calves: "" };
-                  
-                  // Aplica o tema salvo na nuvem
-                  if(data.theme) state.theme = data.theme;
-                  
-                  app.render();
-                  console.log("Dados baixados da nuvem com sucesso.");
-                } else {
-                  // Se é a primeira vez, sobe o que tem local para a nuvem
-                  saveToCloud();
-                  app.render();
-                }
-            } catch(e) {
-                console.error("Erro ao buscar dados:", e);
+              const docSnap = await getDoc(docRef);
+
+              if (docSnap.exists()) {
+                const data = docSnap.data();
+
+                // Carrega dados da nuvem para o App
+                state.gymData = data.gymData || {};
+                state.routines = data.routines || [];
+                state.diet = data.diet || [];
+                state.dailyCheck = data.dailyCheck || {
+                  creatine: false,
+                  water: false,
+                  sleep: false,
+                  protein: false,
+                };
+                state.bodyMeasurements = data.bodyMeasurements || {
+                  armRight: "",
+                  armLeft: "",
+                  legRight: "",
+                  legLeft: "",
+                  chest: "",
+                  waist: "",
+                  calves: "",
+                };
+
+                // Aplica o tema salvo na nuvem
+                if (data.theme) state.theme = data.theme;
+
+                app.render();
+                console.log("Dados baixados da nuvem com sucesso.");
+              } else {
+                // Se é a primeira vez, sobe o que tem local para a nuvem
+                saveToCloud();
+                app.render();
+              }
+            } catch (e) {
+              console.error("Erro ao buscar dados:", e);
             }
           } else {
             // Se deslogou
@@ -2324,6 +2523,5 @@
         });
       }
     </script>
-
   </body>
 </html>
