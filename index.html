@@ -216,6 +216,9 @@
 
       // === ESTADO GLOBAL ===
       const state = {
+        foodPrices: JSON.parse(localStorage.getItem("gymFoodPrices")) || {},
+        showCostModal: false,
+
         // TEMA: Recupera ou define Dark como padrão
         theme: localStorage.getItem("gymTheme") || "dark",
 
@@ -644,9 +647,12 @@
           );
           localStorage.setItem("gymDiet", JSON.stringify(state.diet));
           localStorage.setItem("gymTheme", state.theme);
+
+          localStorage.setItem("gymFoodPrices", JSON.stringify(state.foodPrices));
         }
       };
 
+      // === APP PRINCIPAL ===
       // === APP PRINCIPAL ===
       window.app = {
         render: () => {
@@ -680,179 +686,100 @@
                   : inactiveColor;
           });
 
+          // RENDERIZAÇÃO DAS ABAS
           if (state.currentTab === "calendar") renderCalendar(root);
           else if (state.currentTab === "diet") renderDietTab(root);
           else if (state.currentTab === "stats") renderStatsTab(root);
           else if (state.currentTab === "tools") renderToolsTab(root);
           else renderRoutineTab(root);
 
+          // RENDERIZAÇÃO DOS MODAIS
           if (state.showModal) renderCalendarModal(root);
           if (state.showDietModal) renderDietModal(root);
           if (state.showRoutineModal) renderRoutineModal(root);
           if (state.viewingImage) renderImageModal(root);
+          
+          // AQUI ESTAVA O PROBLEMA: Chamamos a função global (que vou definir abaixo)
           if (state.showFeaturesModal) renderFeaturesModal(root);
+          
           if (state.showExercisePicker) renderExercisePicker(root);
+          
+          // NOVO: Renderiza a Calculadora se estiver ativa
+          if (state.showCostModal) renderCostModal(root);
 
           lucide.createIcons();
+        },
+
+        // --- LÓGICA DE PRECIFICAÇÃO (CALCULADORA) ---
+        toggleCostModal: () => {
+            state.showCostModal = !state.showCostModal;
+            app.render();
+        },
+
+        updateFoodPrice: (name, field, value) => {
+            if (!state.foodPrices[name]) {
+                state.foodPrices[name] = { price: 0, size: 1, unit: 'g' };
+            }
+            state.foodPrices[name][field] = parseFloat(value) || 0;
+            saveToStorage();
+            app.render(); 
+        },
+
+        calculateTotalCost: () => {
+            let dailyTotal = 0;
+            const uniqueItems = {};
+
+            // 1. Somar consumo diário
+            state.diet.forEach(meal => {
+                meal.foods.forEach(food => {
+                    const name = food.name.trim();
+                    if (!name) return;
+                    if (!uniqueItems[name]) uniqueItems[name] = 0;
+                    uniqueItems[name] += parseFloat(food.qty) || 0;
+                });
+            });
+
+            // 2. Calcular custo
+            Object.keys(uniqueItems).forEach(name => {
+                const dailyQty = uniqueItems[name];
+                const pricing = state.foodPrices[name];
+
+                if (pricing && pricing.price > 0 && pricing.size > 0) {
+                    const costPerUnit = pricing.price / pricing.size;
+                    dailyTotal += costPerUnit * dailyQty;
+                }
+            });
+
+            return { daily: dailyTotal, monthly: dailyTotal * 30 };
+        },
+
+        // --- LÓGICA DE DETALHES (FEATURES) ---
+        toggleFeatures: () => {
+          state.showFeaturesModal = !state.showFeaturesModal;
+          if (!state.showFeaturesModal) {
+            localStorage.setItem("gymHasVisited", "true");
+          }
+          app.render();
         },
 
         toggleFeatureDetails: (id) => {
-          const element = document.getElementById(`feature-details-${id}`);
-          const icon = document.getElementById(`feature-icon-${id}`);
-
-          // Essa verificação evita bugs se o elemento não for encontrado
-          if (element && icon) {
-            if (element.classList.contains("hidden")) {
-              // Abrir
-              element.classList.remove("hidden");
-              element.classList.add(
-                "animate-in",
-                "fade-in",
-                "slide-in-from-top-1"
-              );
-              icon.style.transform = "rotate(180deg)";
-            } else {
-              // Fechar
-              element.classList.add("hidden");
-              element.classList.remove(
-                "animate-in",
-                "fade-in",
-                "slide-in-from-top-1"
-              );
-              icon.style.transform = "rotate(0deg)";
+            const element = document.getElementById(`feature-details-${id}`);
+            const icon = document.getElementById(`feature-icon-${id}`);
+            
+            if (element && icon) {
+                if (element.classList.contains('hidden')) {
+                    element.classList.remove('hidden');
+                    element.classList.add('animate-in', 'fade-in', 'slide-in-from-top-1');
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    element.classList.add('hidden');
+                    element.classList.remove('animate-in', 'fade-in', 'slide-in-from-top-1');
+                    icon.style.transform = 'rotate(0deg)';
+                }
             }
-          }
         },
 
-        renderFeaturesModal: (root) => {
-          const modal = document.createElement("div");
-          modal.className =
-            "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200";
-
-          // AQUI ESTÃO OS TEXTOS DETALHADOS QUE VOCÊ PEDIU:
-          const features = [
-            {
-              id: "daily",
-              icon: "calendar-check",
-              title: "Diário de Treino",
-              desc: "Gerencie sua frequência e histórico.",
-              details:
-                "O coração do app. Marque seus dias como 'Treino', 'Descanso' ou 'Falta'. Ao registrar um treino, você seleciona a ficha usada, anota as cargas, como se sentiu e pode até salvar uma foto do shape do dia para comparar sua evolução futura.",
-            },
-            {
-              id: "routines",
-              icon: "clipboard-list",
-              title: "Montagem de Fichas",
-              desc: "Crie treinos ABC, ABCD ou personalizados.",
-              details:
-                "Liberdade total para montar seu treino. Crie rotinas ilimitadas (ex: 'Treino de Força', 'Adaptação'). Adicione exercícios específicos para cada dia da semana, reordene a lista e edite séries e repetições a qualquer momento.",
-            },
-            {
-              id: "gifs",
-              icon: "play-circle",
-              title: "Biblioteca Visual (GIFs)",
-              desc: "Aprenda a execução correta.",
-              details:
-                "Nunca mais fique na dúvida na academia. Ao clicar em qualquer exercício da sua ficha, você vê um GIF em alta qualidade da execução, lista de músculos trabalhados e 'Dicas de Mestre' para melhorar sua técnica e evitar lesões.",
-            },
-            {
-              id: "diet",
-              icon: "utensils",
-              title: "Gestão de Dieta",
-              desc: "Planeje suas refeições e horários.",
-              details:
-                "Organize sua alimentação. Crie refeições (Café, Almoço, Janta...), defina o horário e liste os alimentos e quantidades. Se ativar as notificações, o app te avisa 15 minutos antes de cada refeição para você não esquecer de comer.",
-            },
-            {
-              id: "tools",
-              icon: "wrench",
-              title: "Ferramentas Úteis",
-              desc: "Cronômetro, Medidas e Checklist.",
-              details:
-                "Um canivete suíço para quem treina: Cronômetro para o descanso entre séries, Tabela de Medidas para registrar o crescimento de braço/perna/peito e um Checklist diário para marcar seus hábitos (Água, Creatina, Sono, Proteína).",
-            },
-            {
-              id: "cloud",
-              icon: "cloud",
-              title: "Backup na Nuvem",
-              desc: "Seus dados salvos no Google.",
-              details:
-                "Segurança total. Faça login com sua conta Google para sincronizar tudo na nuvem. Se você trocar de celular, formatar ou acessar pelo computador, suas fichas, histórico e dieta estarão lá, sãos e salvos.",
-            },
-            {
-              id: "ui",
-              icon: "moon",
-              title: "Personalização",
-              desc: "Temas Claro e Escuro.",
-              details:
-                "Escolha o visual que mais te agrada. O modo Dark economiza bateria e foca no conteúdo, enquanto o novo modo Light (Lavanda) oferece uma interface limpa e moderna com alto contraste.",
-            },
-          ];
-
-          const featuresHtml = features
-            .map(
-              (f) => `
-                <div onclick="app.toggleFeatureDetails('${
-                  f.id
-                }')" class="group bg-surface border border-bordercol rounded-2xl overflow-hidden cursor-pointer hover:border-brand transition-all active:scale-[0.98] mb-3">
-                    <div class="flex items-center gap-4 p-4">
-                        <div class="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand flex-shrink-0 group-hover:bg-brand group-hover:text-white transition-colors">
-                            <i data-lucide="${f.icon}" class="w-5 h-5"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-txt-main font-bold text-sm mb-0.5">${escapeHtml(
-                              f.title
-                            )}</h4>
-                            <p class="text-txt-dim text-xs">${escapeHtml(
-                              f.desc
-                            )}</p>
-                        </div>
-                        <i id="feature-icon-${
-                          f.id
-                        }" data-lucide="chevron-down" class="w-5 h-5 text-txt-dim transition-transform duration-300"></i>
-                    </div>
-                    
-                    <div id="feature-details-${
-                      f.id
-                    }" class="hidden bg-inputbg border-t border-bordercol p-4">
-                        <p class="text-txt-dim text-xs leading-relaxed">
-                            ${escapeHtml(f.details)}
-                        </p>
-                    </div>
-                </div>
-            `
-            )
-            .join("");
-
-          modal.innerHTML = `
-                <div class="bg-app w-full max-w-md rounded-3xl border border-bordercol shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-                    <div class="p-6 border-b border-bordercol bg-surface z-10">
-                        <div class="flex justify-between items-center mb-2">
-                            <h3 class="text-xl font-bold text-txt-main flex items-center gap-2">
-                                <i data-lucide="sparkles" class="text-brand"></i> Novidades
-                            </h3>
-                            <button onclick="app.toggleFeatures()" class="p-2 rounded-full bg-app hover:bg-bordercol text-txt-dim hover:text-brand border border-bordercol transition-colors">
-                                <i data-lucide="x" class="w-5 h-5"></i>
-                            </button>
-                        </div>
-                        <p class="text-txt-dim text-sm">Toque nos itens para ver os detalhes.</p>
-                    </div>
-
-                    <div class="p-4 overflow-y-auto custom-scrollbar bg-app">
-                        ${featuresHtml}
-                    </div>
-
-                    <div class="p-4 border-t border-bordercol bg-surface z-10">
-                        <button onclick="app.toggleFeatures()" class="w-full bg-brand hover:bg-brand-hover text-white py-3.5 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-brand/20">
-                            Entendi, vamos treinar!
-                        </button>
-                    </div>
-                </div>
-            `;
-          root.appendChild(modal);
-          lucide.createIcons();
-        },
-
+        // --- OUTRAS FUNÇÕES DO APP ---
         toggleTheme: () => {
           state.theme = state.theme === "dark" ? "light" : "dark";
           saveToStorage();
@@ -990,7 +917,7 @@
         },
         setPickerSearch: (text) => {
           state.pickerSearch = text;
-          updatePickerGridOnly();
+          app.render(); // Corrigido para chamar render
         },
         selectExerciseFromPicker: (name, type) => {
           const targetList =
@@ -1021,42 +948,6 @@
         setTab: (tab) => {
           state.currentTab = tab;
           app.render();
-        },
-        toggleFeatures: () => {
-          state.showFeaturesModal = !state.showFeaturesModal;
-
-          // Se estiver fechando, marca que já viu para não abrir sozinho de novo
-          if (!state.showFeaturesModal) {
-            localStorage.setItem("gymHasVisited", "true");
-          }
-
-          app.render();
-        },
-        toggleFeatureDetails: (id) => {
-          const element = document.getElementById(`feature-details-${id}`);
-          const icon = document.getElementById(`feature-icon-${id}`);
-
-          if (element && icon) {
-            if (element.classList.contains("hidden")) {
-              // Abrir
-              element.classList.remove("hidden");
-              element.classList.add(
-                "animate-in",
-                "fade-in",
-                "slide-in-from-top-1"
-              );
-              icon.style.transform = "rotate(180deg)";
-            } else {
-              // Fechar
-              element.classList.add("hidden");
-              element.classList.remove(
-                "animate-in",
-                "fade-in",
-                "slide-in-from-top-1"
-              );
-              icon.style.transform = "rotate(0deg)";
-            }
-          }
         },
         openImage: (name, url) => {
           state.viewingImage = { name, url };
@@ -2207,63 +2098,177 @@
             </div>`
                 )
                 .join("");
+        
+        // Aqui chamamos o cálculo de total
+        const totals = app.calculateTotalCost ? app.calculateTotalCost() : { monthly: 0 };
 
-        root.innerHTML = `<div class="mb-6 pt-2 flex justify-between items-end"><div><h1 class="text-2xl font-bold text-txt-main mb-1 flex items-center gap-2"><i data-lucide="apple" class="text-brand"></i> Dieta</h1><p class="text-txt-dim text-sm">Seu cardápio diário</p></div>${
-          Notification.permission !== "granted"
-            ? `<button onclick="app.requestNotificationPermission()" class="bg-surface p-2 rounded-full text-brand hover:text-white border border-bordercol"><i data-lucide="bell" class="w-5 h-5"></i></button>`
-            : `<div class="text-status-success text-[10px] font-bold border border-green-900 bg-green-900/20 px-2 py-1 rounded-full flex items-center gap-1"><i data-lucide="bell-ring" class="w-3 h-3"></i> Alertas On</div>`
-        }</div><div class="pb-20">${mealsHtml}<button onclick="app.openDietModal()" class="w-full bg-brand hover:bg-brand-hover text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all mt-4"><i data-lucide="plus" class="w-5 h-5"></i> Adicionar Refeição</button></div>`;
+        root.innerHTML = `
+            <div class="mb-6 pt-2 flex justify-between items-end">
+                <div>
+                    <h1 class="text-2xl font-bold text-txt-main mb-1 flex items-center gap-2"><i data-lucide="apple" class="text-brand"></i> Dieta</h1>
+                    <p class="text-txt-dim text-sm">Seu cardápio diário</p>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="app.toggleCostModal()" class="bg-surface p-2 rounded-full text-status-success border border-bordercol hover:bg-inputbg transition-colors shadow-sm relative">
+                        <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                        ${totals.monthly > 0 ? `<div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-status-danger rounded-full border-2 border-app"></div>` : ''}
+                    </button>
+
+                    ${
+                      Notification.permission !== "granted"
+                        ? `<button onclick="app.requestNotificationPermission()" class="bg-surface p-2 rounded-full text-brand hover:text-white border border-bordercol"><i data-lucide="bell" class="w-5 h-5"></i></button>`
+                        : `<div class="text-status-success text-[10px] font-bold border border-green-900 bg-green-900/20 px-2 py-1 rounded-full flex items-center gap-1 h-9"><i data-lucide="bell-ring" class="w-3 h-3"></i> On</div>`
+                    }
+                </div>
+            </div>
+
+            ${totals.monthly > 0 ? `
+            <div onclick="app.toggleCostModal()" class="mb-4 p-3 bg-surface border border-bordercol rounded-xl flex justify-between items-center cursor-pointer hover:border-status-success transition-colors">
+                <span class="text-xs text-txt-dim font-bold uppercase tracking-wider">Gasto Estimado</span>
+                <span class="text-status-success font-bold font-mono">R$ ${totals.monthly.toFixed(2)} <span class="text-[10px] text-txt-dim">/mês</span></span>
+            </div>` : ''}
+
+            <div class="pb-20">
+                ${mealsHtml}
+                <button onclick="app.openDietModal()" class="w-full bg-brand hover:bg-brand-hover text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all mt-4">
+                    <i data-lucide="plus" class="w-5 h-5"></i> Adicionar Refeição
+                </button>
+            </div>
+        `;
       }
 
-      function renderDietModal(root) {
-        const meal = state.editingMeal;
+      function renderCostModal(root) {
         const modal = document.createElement("div");
-        modal.className =
-          "fixed inset-0 flex items-end sm:items-center justify-center sm:p-4 z-50";
-        modal.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
-        modal.style.backdropFilter = "blur(4px)";
+        // Z-Index alto (80) para garantir que fique acima de tudo
+        modal.className = "fixed inset-0 z-[80] bg-black/95 flex flex-col animate-in fade-in duration-200";
 
-        const foodsInputs = meal.foods
-          .map(
-            (food, i) => `
-          <div class="flex gap-2 mb-2 items-center animate-in fade-in slide-in-from-left-2 duration-300" style="animation-delay: ${
-            i * 50
-          }ms">
-            <div class="flex-1"><input type="text" value="${escapeHtml(
-              food.name
-            )}" oninput="app.updateFoodRow(${i}, 'name', this.value)" class="w-full p-3 bg-surface border border-bordercol rounded-xl text-txt-main text-sm focus:border-brand outline-none" placeholder="Ex: Arroz"></div>
-            <div class="w-20"><input type="number" value="${escapeHtml(
-              food.qty
-            )}" oninput="app.updateFoodRow(${i}, 'qty', this.value)" class="w-full p-3 bg-surface border border-bordercol rounded-xl text-txt-main text-center text-sm focus:border-brand outline-none" placeholder="0"></div>
-            <div class="w-20"><select onchange="app.updateFoodRow(${i}, 'unit', this.value)" class="w-full p-3 bg-surface border border-bordercol rounded-xl text-txt-main text-sm focus:border-brand outline-none appearance-none text-center"><option value="g" ${
-              food.unit === "g" ? "selected" : ""
-            }>g</option><option value="ml" ${
-              food.unit === "ml" ? "selected" : ""
-            }>ml</option><option value="un" ${
-              food.unit === "un" ? "selected" : ""
-            }>un</option><option value="kcal" ${
-              food.unit === "kcal" ? "selected" : ""
-            }>kcal</option></select></div>
-            <button onclick="app.removeFoodRow(${i})" class="p-3 text-status-danger hover:bg-status-danger-faint rounded-xl transition-colors"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
-          </div>
-        `
-          )
-          .join("");
+        // --- 1. Lógica de Cálculo Interna (Blindada) ---
+        const uniqueItems = {};
+        let dailyTotal = 0;
+        
+        // Garante que 'diet' é um array antes de tentar ler
+        const dietList = Array.isArray(state.diet) ? state.diet : [];
 
-        modal.innerHTML = `<div class="bg-app w-full sm:w-[500px] sm:rounded-3xl rounded-t-3xl shadow-none flex flex-col max-h-[90vh] border-t border-bordercol sm:border"><div class="flex justify-between items-center p-5 border-b border-bordercol bg-app rounded-t-3xl"><h3 class="text-lg font-bold text-txt-main flex items-center gap-2">${
-          meal.index !== undefined
-            ? '<i data-lucide="pencil" class="text-brand"></i> Editar Refeição'
-            : '<i data-lucide="plus-circle" class="text-brand"></i> Nova Refeição'
-        }</h3><button onclick="app.closeDietModal()" class="p-2 rounded-full bg-surface hover:bg-bordercol text-txt-muted hover:text-white transition-colors border border-bordercol"><i data-lucide="x" class="w-5 h-5"></i></button></div><div class="p-5 overflow-y-auto custom-scrollbar bg-app flex-1"><div class="grid grid-cols-3 gap-3 mb-6"><div class="col-span-1"><label class="block text-[10px] font-bold text-txt-dim mb-1.5 uppercase">Horário</label><input type="time" value="${
-          meal.time
-        }" oninput="app.updateMealMeta('time', this.value)" class="w-full p-3 bg-inputbg border border-bordercol rounded-xl text-txt-main font-bold text-lg focus:border-brand outline-none text-center"></div><div class="col-span-2"><label class="block text-[10px] font-bold text-txt-dim mb-1.5 uppercase">Nome</label><input type="text" value="${escapeHtml(
-          meal.name
-        )}" oninput="app.updateMealMeta('name', this.value)" class="w-full p-3 bg-inputbg border border-bordercol rounded-xl text-txt-main font-bold text-lg focus:border-brand outline-none" placeholder="Ex: Café da Manhã"></div></div><div class="mb-2 flex justify-between items-center"><label class="block text-[10px] font-bold text-txt-dim uppercase">Alimentos</label><button onclick="app.addFoodRow()" class="text-xs font-bold text-brand hover:text-brand flex items-center gap-1">+ Item</button></div><div class="space-y-1 mb-6">${foodsInputs}</div></div><div class="p-4 border-t border-bordercol bg-app flex flex-col gap-3"><button onclick="app.saveMeal()" class="w-full bg-brand hover:bg-brand-hover text-white py-4 rounded-xl font-bold transition-all active:scale-95">Salvar Refeição</button>${
-          meal.index !== undefined
-            ? `<button onclick="app.deleteMeal(${meal.index})" class="w-full text-status-danger font-bold text-sm py-2 hover:bg-status-danger-faint rounded-xl transition-colors">Excluir</button>`
-            : ""
-        }</div></div>`;
+        dietList.forEach(meal => {
+            if(meal.foods && Array.isArray(meal.foods)) {
+                meal.foods.forEach(food => {
+                    const name = food.name ? food.name.trim() : "";
+                    if(name) {
+                        if(!uniqueItems[name]) uniqueItems[name] = { totalQty: 0, unit: food.unit || 'g' };
+                        uniqueItems[name].totalQty += parseFloat(food.qty) || 0;
+                    }
+                });
+            }
+        });
+
+        const itemsList = Object.keys(uniqueItems).sort();
+
+        // Calcula o total geral
+        itemsList.forEach(name => {
+             const consumption = uniqueItems[name];
+             const priceData = state.foodPrices[name];
+             if (priceData && priceData.price > 0 && priceData.size > 0) {
+                 const costPerUnit = priceData.price / priceData.size;
+                 dailyTotal += costPerUnit * consumption.totalQty;
+             }
+        });
+
+        const monthlyTotal = dailyTotal * 30;
+
+        // --- 2. HTML da Lista ---
+        const listHtml = itemsList.map(name => {
+            const consumption = uniqueItems[name];
+            // Recupera preço salvo ou usa vazio
+            const priceData = state.foodPrices[name] || { price: '', size: '', unit: consumption.unit }; 
+            
+            // Cálculo individual para exibir no card
+            let monthlyCostItem = 0;
+            if (priceData.price && priceData.size) {
+                monthlyCostItem = ((priceData.price / priceData.size) * consumption.totalQty) * 30;
+            }
+
+            // Define se é kg/L ou unidade para exibição bonita
+            const isWeight = consumption.unit === 'g' || consumption.unit === 'ml';
+            const displayQty = isWeight ? consumption.totalQty * 30 / 1000 : consumption.totalQty * 30;
+            const displayUnit = isWeight ? (consumption.unit === 'g' ? 'kg' : 'L') : 'un';
+
+            return `
+            <div class="bg-surface border border-bordercol rounded-2xl p-4 mb-3 shadow-sm">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h4 class="text-txt-main font-bold text-sm">${escapeHtml(name)}</h4>
+                        <p class="text-txt-dim text-xs mt-0.5">
+                           Consumo mensal: <span class="text-brand font-mono font-bold">${displayQty.toFixed(1)} ${displayUnit}</span>
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <span class="block text-status-success font-bold text-sm">R$ ${monthlyCostItem.toFixed(2)}</span>
+                        <span class="text-[10px] text-txt-dim">por mês</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-7 gap-2 items-end">
+                    <div class="col-span-3">
+                        <label class="block text-[9px] text-txt-dim uppercase font-bold mb-1">Preço (R$)</label>
+                        <input type="number" step="0.01" placeholder="0.00" value="${priceData.price}" oninput="app.updateFoodPrice('${name}', 'price', this.value)" class="w-full bg-inputbg border border-bordercol rounded-lg p-2 text-txt-main text-sm outline-none focus:border-brand font-mono">
+                    </div>
+                    <div class="col-span-3">
+                        <label class="block text-[9px] text-txt-dim uppercase font-bold mb-1">Qtd. Pacote</label>
+                        <input type="number" placeholder="${isWeight ? '1000' : '1'}" value="${priceData.size}" oninput="app.updateFoodPrice('${name}', 'size', this.value)" class="w-full bg-inputbg border border-bordercol rounded-lg p-2 text-txt-main text-sm outline-none focus:border-brand font-mono">
+                    </div>
+                    <div class="col-span-1">
+                        <span class="flex items-center justify-center h-9 text-xs text-txt-dim font-bold border border-transparent mt-4">${priceData.unit || 'g'}</span>
+                    </div>
+                </div>
+            </div>`;
+        }).join("");
+
+        // --- 3. HTML Principal do Modal ---
+        modal.innerHTML = `
+            <div class="bg-surface border-b border-bordercol p-4 flex items-center gap-3 shrink-0">
+                <button onclick="app.toggleCostModal()" class="p-2 -ml-2 rounded-full hover:bg-inputbg text-txt-dim transition-colors">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                </button>
+                <div class="flex-1">
+                    <h2 class="text-lg font-bold text-txt-main flex items-center gap-2">
+                        <i data-lucide="calculator" class="w-5 h-5 text-status-success"></i> Custos
+                    </h2>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-4 bg-app">
+                <div class="bg-status-info/10 border border-status-info/20 p-4 rounded-xl mb-6 flex gap-3">
+                    <i data-lucide="info" class="w-5 h-5 text-status-info flex-shrink-0 mt-0.5"></i>
+                    <p class="text-xs text-status-info leading-relaxed">
+                        Preencha o <b>Preço</b> e o <b>Tamanho Total</b> da embalagem que você compra no mercado (ex: Arroz, R$ 25,00, 5000g).
+                    </p>
+                </div>
+
+                ${itemsList.length > 0 
+                    ? listHtml 
+                    : `<div class="text-center py-10 opacity-50">
+                        <i data-lucide="carrot" class="w-12 h-12 mx-auto mb-2 text-txt-dim"></i>
+                        <p class="text-txt-dim text-sm">Adicione alimentos na sua dieta primeiro.</p>
+                       </div>`
+                }
+                
+                <div class="h-20"></div>
+            </div>
+
+            <div class="bg-surface border-t border-bordercol p-4 pb-8 shadow-2xl z-20">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-txt-dim text-xs uppercase font-bold tracking-wider">Gasto Diário Estimado</span>
+                    <span class="text-txt-main font-bold">R$ ${dailyTotal.toFixed(2)}</span>
+                </div>
+                <div class="flex justify-between items-center mt-2">
+                    <span class="text-txt-main font-bold text-lg">Total Mensal</span>
+                    <span class="text-status-success font-black text-3xl tracking-tight">R$ ${monthlyTotal.toFixed(2)}</span>
+                </div>
+            </div>
+        `;
         root.appendChild(modal);
+        lucide.createIcons();
       }
 
       function renderStatsTab(root) {
@@ -2619,135 +2624,6 @@
         }
       }
 
-      function renderFeaturesModal(root) {
-        const modal = document.createElement("div");
-        modal.className =
-          "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200";
-
-        // --- LISTA ATUALIZADA E COMPLETA ---
-        const features = [
-          {
-            id: "daily",
-            icon: "calendar-check",
-            title: "Diário de Treino",
-            desc: "Gerencie sua frequência e histórico.",
-            details:
-              "O coração do app. Marque seus dias como 'Treino', 'Descanso' ou 'Falta'. Ao registrar um treino, você seleciona a ficha usada, anota as cargas, como se sentiu e pode até salvar uma foto do shape do dia para comparar sua evolução futura.",
-          },
-          {
-            id: "routines",
-            icon: "clipboard-list",
-            title: "Montagem de Fichas",
-            desc: "Crie treinos ABC, ABCD ou personalizados.",
-            details:
-              "Liberdade total para montar seu treino. Crie rotinas ilimitadas (ex: 'Treino de Força', 'Adaptação'). Adicione exercícios específicos para cada dia da semana, reordene a lista e edite séries e repetições a qualquer momento.",
-          },
-          {
-            id: "gifs",
-            icon: "play-circle",
-            title: "Biblioteca Visual (GIFs)",
-            desc: "Aprenda a execução correta.",
-            details:
-              "Nunca mais fique na dúvida na academia. Ao clicar em qualquer exercício da sua ficha, você vê um GIF em alta qualidade da execução, lista de músculos trabalhados e 'Dicas de Mestre' para melhorar sua técnica e evitar lesões.",
-          },
-          {
-            id: "diet",
-            icon: "utensils",
-            title: "Gestão de Dieta",
-            desc: "Planeje suas refeições e horários.",
-            details:
-              "Organize sua alimentação. Crie refeições (Café, Almoço, Janta...), defina o horário e liste os alimentos e quantidades. Se ativar as notificações, o app te avisa 15 minutos antes de cada refeição para você não esquecer de comer.",
-          },
-          {
-            id: "tools",
-            icon: "wrench",
-            title: "Ferramentas Úteis",
-            desc: "Cronômetro, Medidas e Checklist.",
-            details:
-              "Um canivete suíço para quem treina: Cronômetro para o descanso entre séries, Tabela de Medidas para registrar o crescimento de braço/perna/peito e um Checklist diário para marcar seus hábitos (Água, Creatina, Sono, Proteína).",
-          },
-          {
-            id: "cloud",
-            icon: "cloud",
-            title: "Backup na Nuvem",
-            desc: "Seus dados salvos no Google.",
-            details:
-              "Segurança total. Faça login com sua conta Google para sincronizar tudo na nuvem. Se você trocar de celular, formatar ou acessar pelo computador, suas fichas, histórico e dieta estarão lá, sãos e salvos.",
-          },
-          {
-            id: "ui",
-            icon: "moon",
-            title: "Personalização",
-            desc: "Temas Claro e Escuro.",
-            details:
-              "Escolha o visual que mais te agrada. O modo Dark economiza bateria e foca no conteúdo, enquanto o novo modo Light (Lavanda) oferece uma interface limpa e moderna com alto contraste.",
-          },
-        ];
-
-        const featuresHtml = features
-          .map(
-            (f) => `
-            <div onclick="app.toggleFeatureDetails('${
-              f.id
-            }')" class="group bg-surface border border-bordercol rounded-2xl overflow-hidden cursor-pointer hover:border-brand transition-all active:scale-[0.98] mb-3">
-                <div class="flex items-center gap-4 p-4">
-                    <div class="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand flex-shrink-0 group-hover:bg-brand group-hover:text-white transition-colors">
-                        <i data-lucide="${f.icon}" class="w-5 h-5"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="text-txt-main font-bold text-sm mb-0.5">${escapeHtml(
-                          f.title
-                        )}</h4>
-                        <p class="text-txt-dim text-xs">${escapeHtml(
-                          f.desc
-                        )}</p>
-                    </div>
-                    <i id="feature-icon-${
-                      f.id
-                    }" data-lucide="chevron-down" class="w-5 h-5 text-txt-dim transition-transform duration-300"></i>
-                </div>
-                
-                <div id="feature-details-${
-                  f.id
-                }" class="hidden bg-inputbg border-t border-bordercol p-4 animate-in fade-in slide-in-from-top-1">
-                    <p class="text-txt-main text-xs leading-relaxed opacity-80">
-                        ${escapeHtml(f.details)}
-                    </p>
-                </div>
-            </div>
-        `
-          )
-          .join("");
-
-        modal.innerHTML = `
-            <div class="bg-app w-full max-w-md rounded-3xl border border-bordercol shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-                <div class="p-6 border-b border-bordercol bg-surface z-10">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-xl font-bold text-txt-main flex items-center gap-2">
-                            <i data-lucide="sparkles" class="text-brand"></i> Novidades
-                        </h3>
-                        <button onclick="app.toggleFeatures()" class="p-2 rounded-full bg-app hover:bg-bordercol text-txt-dim hover:text-brand border border-bordercol transition-colors">
-                            <i data-lucide="x" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                    <p class="text-txt-dim text-sm">Toque nos itens para ver os detalhes.</p>
-                </div>
-
-                <div class="p-4 overflow-y-auto custom-scrollbar bg-app">
-                    ${featuresHtml}
-                </div>
-
-                <div class="p-4 border-t border-bordercol bg-surface z-10">
-                    <button onclick="app.toggleFeatures()" class="w-full bg-brand hover:bg-brand-hover text-white py-3.5 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-brand/20">
-                        Entendi, vamos treinar!
-                    </button>
-                </div>
-            </div>
-        `;
-        root.appendChild(modal);
-        lucide.createIcons();
-      }
-
       function renderExercisePicker(root) {
         const modal = document.createElement("div");
         modal.className =
@@ -2849,6 +2725,192 @@
             </div>
         `;
         root.appendChild(modal);
+      }
+
+      function renderImageModal(root) {
+        const modal = document.createElement("div");
+        modal.className = "fixed inset-0 z-[70] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200";
+        
+        // Pega os dados do exercício clicado
+        const { name, url } = state.viewingImage;
+        
+        // Pega os detalhes (passos, dicas) ou usa o padrão se não tiver específico
+        const details = exerciseDetails[name] || defaultDetails;
+        
+        // Garante que 'steps' seja um array
+        const steps = Array.isArray(details.steps) ? details.steps : ["Execute o movimento de forma controlada.", "Mantenha a postura correta."];
+
+        modal.innerHTML = `
+            <div class="bg-app w-full max-w-md rounded-3xl border border-bordercol shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div class="flex justify-between items-center p-4 border-b border-bordercol bg-surface">
+                    <h3 class="text-lg font-bold text-txt-main truncate pr-4 flex items-center gap-2">
+                        <i data-lucide="info" class="w-5 h-5 text-brand"></i>
+                        ${escapeHtml(name)}
+                    </h3>
+                    <button onclick="app.closeImage()" class="p-2 rounded-full bg-inputbg hover:bg-bordercol text-txt-dim hover:text-brand transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                
+                <div class="overflow-y-auto custom-scrollbar bg-app">
+                    <div class="bg-black flex items-center justify-center aspect-video relative border-b border-bordercol">
+                        <img src="${url}" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/400x300/27272a/FFF?text=Sem+Imagem'">
+                    </div>
+
+                    <div class="p-5 space-y-4">
+                        
+                        <div class="bg-surface p-4 rounded-2xl border border-bordercol shadow-sm">
+                            <h4 class="text-xs font-bold text-txt-dim uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <i data-lucide="activity" class="w-4 h-4"></i> Músculos Alvo
+                            </h4>
+                            <p class="text-txt-main text-sm font-medium leading-relaxed">
+                                ${details.muscles || "Musculatura geral do exercício."}
+                            </p>
+                        </div>
+
+                        <div class="bg-surface p-4 rounded-2xl border border-bordercol shadow-sm">
+                            <h4 class="text-xs font-bold text-txt-dim uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <i data-lucide="play-circle" class="w-4 h-4"></i> Execução
+                            </h4>
+                            <ul class="space-y-3">
+                                ${steps.map((step, i) => `
+                                    <li class="flex gap-3 text-sm text-txt-main">
+                                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-brand/10 text-brand flex items-center justify-center text-xs font-bold border border-brand/20">${i + 1}</span>
+                                        <span class="leading-snug pt-0.5">${step}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+
+                        <div class="bg-status-info/10 p-4 rounded-2xl border border-status-info/20">
+                            <h4 class="text-xs font-bold text-status-info uppercase tracking-wider mb-2 flex items-center gap-2">
+                                <i data-lucide="lightbulb" class="w-4 h-4"></i> Dica Importante
+                            </h4>
+                            <p class="text-status-info text-sm leading-relaxed font-medium">
+                                ${details.tips || "Concentre-se na conexão mente-músculo e respire corretamente."}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-4 border-t border-bordercol bg-surface">
+                    <button onclick="app.closeImage()" class="w-full bg-surface border-2 border-bordercol hover:border-brand text-txt-main py-3 rounded-xl font-bold transition-all active:scale-[0.98]">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        root.appendChild(modal);
+        // Recarrega os ícones dentro do modal
+        lucide.createIcons();
+      }
+
+      function renderFeaturesModal(root) {
+        const modal = document.createElement("div");
+        modal.className = "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200";
+
+        // AQUI ESTÃO OS TEXTOS NOVOS E DETALHADOS
+        const features = [
+            { 
+                id: 'daily',
+                icon: "calendar-check", 
+                title: "Diário de Treino", 
+                desc: "Gerencie sua frequência e histórico.",
+                details: "O coração do app. Marque seus dias como 'Treino', 'Descanso' ou 'Falta'. Ao registrar um treino, você seleciona a ficha usada, anota as cargas, como se sentiu e pode até salvar uma foto do shape."
+            },
+            { 
+                id: 'routines',
+                icon: "clipboard-list", 
+                title: "Montagem de Fichas", 
+                desc: "Crie treinos ABC, ABCD ou personalizados.",
+                details: "Liberdade total. Crie rotinas ilimitadas. Adicione exercícios para cada dia da semana, reordene a lista e edite séries e repetições a qualquer momento."
+            },
+            { 
+                id: 'gifs',
+                icon: "play-circle", 
+                title: "Biblioteca Visual (GIFs)", 
+                desc: "Aprenda a execução correta.",
+                details: "Não fique na dúvida. Ao clicar no exercício da sua ficha, você vê um GIF da execução, lista de músculos trabalhados e 'Dicas de Mestre' para melhorar sua técnica."
+            },
+            { 
+                id: 'diet',
+                icon: "utensils", 
+                title: "Gestão de Dieta", 
+                desc: "Planeje suas refeições e horários.",
+                details: "Crie seu cardápio diário definindo horários e alimentos. Se ativar as notificações, o app te avisa 15 minutos antes de cada refeição."
+            },
+            { 
+                id: 'tools',
+                icon: "wrench", 
+                title: "Ferramentas Úteis", 
+                desc: "Cronômetro, Medidas e Checklist.",
+                details: "Use o Cronômetro para descanso, registre suas medidas corporais (braço, peito, perna) e use o Checklist diário para marcar hábitos (Água, Creatina, Sono)."
+            },
+            { 
+                id: 'cloud',
+                icon: "cloud", 
+                title: "Backup na Nuvem", 
+                desc: "Seus dados salvos no Google.",
+                details: "Faça login com sua conta Google para sincronizar tudo. Se trocar de celular ou formatar, seus dados estarão salvos."
+            },
+            { 
+                id: 'ui',
+                icon: "moon", 
+                title: "Personalização", 
+                desc: "Temas Claro e Escuro.",
+                details: "Escolha o visual. O modo Dark economiza bateria, enquanto o novo modo Light (Lavanda) oferece uma interface limpa e moderna."
+            }
+        ];
+
+        const featuresHtml = features.map(f => `
+            <div onclick="app.toggleFeatureDetails('${f.id}')" class="group bg-surface border border-bordercol rounded-2xl overflow-hidden cursor-pointer hover:border-brand transition-all active:scale-[0.99] mb-3">
+                <div class="flex items-center gap-4 p-4">
+                    <div class="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand flex-shrink-0 group-hover:bg-brand group-hover:text-white transition-colors">
+                        <i data-lucide="${f.icon}" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-txt-main font-bold text-sm mb-0.5">${escapeHtml(f.title)}</h4>
+                        <p class="text-txt-dim text-xs">${escapeHtml(f.desc)}</p>
+                    </div>
+                    <i id="feature-icon-${f.id}" data-lucide="chevron-down" class="w-5 h-5 text-txt-dim transition-transform duration-300"></i>
+                </div>
+                
+                <div id="feature-details-${f.id}" class="hidden bg-inputbg border-t border-bordercol p-4 animate-in fade-in slide-in-from-top-1">
+                    <p class="text-txt-main text-xs leading-relaxed opacity-80">
+                        ${escapeHtml(f.details)}
+                    </p>
+                </div>
+            </div>
+        `).join("");
+
+        modal.innerHTML = `
+            <div class="bg-app w-full max-w-md rounded-3xl border border-bordercol shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                <div class="p-6 border-b border-bordercol bg-surface z-10">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xl font-bold text-txt-main flex items-center gap-2">
+                            <i data-lucide="sparkles" class="text-brand"></i> Novidades
+                        </h3>
+                        <button onclick="app.toggleFeatures()" class="p-2 rounded-full bg-inputbg hover:bg-bordercol text-txt-dim hover:text-brand border border-bordercol transition-colors">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <p class="text-txt-dim text-sm">Toque nos itens para ver os detalhes.</p>
+                </div>
+
+                <div class="p-4 overflow-y-auto custom-scrollbar bg-app">
+                    ${featuresHtml}
+                </div>
+
+                <div class="p-4 border-t border-bordercol bg-surface z-10">
+                    <button onclick="app.toggleFeatures()" class="w-full bg-brand hover:bg-brand-hover text-white py-3.5 rounded-xl font-bold transition-all active:scale-95 shadow-lg shadow-brand/20">
+                        Entendi, vamos treinar!
+                    </button>
+                </div>
+            </div>
+        `;
+        root.appendChild(modal);
+        lucide.createIcons();
       }
 
       app.render();
