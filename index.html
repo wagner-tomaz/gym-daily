@@ -1760,52 +1760,41 @@ Entendi, vamos treinar!
       }
 
       function renderStatsTab(root) {
+        // --- CONFIGURAÇÃO VISUAL ---
+        const BRAND_COLOR = "#9333ea"; // Roxo Oficial
+        
         // 1. Definição do Período e Dados
         const now = new Date();
         let startDate = new Date();
         let labels = [];
         let dataPoints = [];
         
-        // Configura datas baseado no filtro
         if (state.statsPeriod === 'week') {
             const day = now.getDay(); 
-            startDate.setDate(now.getDate() - day); // Domingo passado
+            startDate.setDate(now.getDate() - day); 
             for(let i=0; i<7; i++) {
                 let d = new Date(startDate);
                 d.setDate(startDate.getDate() + i);
-                labels.push(dayNames[d.getDay()]); // Dom, Seg...
-                // Busca dados
+                labels.push(dayNames[d.getDay()].substring(0,3));
                 const k = formatDateKey(d.getFullYear(), d.getMonth(), d.getDate());
                 const entry = state.gymData[k];
-                
-                if (state.statsMetric === 'weight') {
-                    // Pega o peso se tiver, senão null (para não quebrar o gráfico)
-                    dataPoints.push(entry && entry.weight ? parseFloat(entry.weight) : null);
-                } else {
-                    // Frequência: 1 se foi, 0 se não
-                    dataPoints.push(entry && entry.attended ? 1 : 0);
-                }
+                if (state.statsMetric === 'weight') dataPoints.push(entry && entry.weight ? parseFloat(entry.weight) : null);
+                else dataPoints.push(entry && entry.attended ? 1 : 0);
             }
         } else if (state.statsPeriod === 'month') {
             const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
             for(let i=1; i<=daysInMonth; i++) {
-                if (i % 5 === 0 || i === 1) labels.push(i); // Mostra dia 1, 5, 10... pra caber
+                if (i === 1 || i % 5 === 0) labels.push(i);
                 else labels.push('');
-                
                 const k = formatDateKey(now.getFullYear(), now.getMonth(), i);
                 const entry = state.gymData[k];
-                
-                if (state.statsMetric === 'weight') {
-                    dataPoints.push(entry && entry.weight ? parseFloat(entry.weight) : null);
-                } else {
-                    dataPoints.push(entry && entry.attended ? 1 : 0);
-                }
+                if (state.statsMetric === 'weight') dataPoints.push(entry && entry.weight ? parseFloat(entry.weight) : null);
+                else dataPoints.push(entry && entry.attended ? 1 : 0);
             }
         } else {
-            // YEAR (Resumo por mês)
+            // YEAR
             for(let i=0; i<12; i++) {
                 labels.push(monthNames[i].substring(0,3));
-                // Média do mês ou total de treinos
                 let sum = 0; let count = 0;
                 for (let d=1; d<=31; d++) {
                     const k = formatDateKey(now.getFullYear(), i, d);
@@ -1816,81 +1805,121 @@ Entendi, vamos treinar!
                     }
                 }
                 if (state.statsMetric === 'weight') dataPoints.push(count > 0 ? sum/count : null);
-                else dataPoints.push(sum); // Total de treinos no mês
+                else dataPoints.push(sum);
             }
         }
 
-        // 2. Prepara o SVG
-        // Se for peso, precisamos filtrar os nulos para achar min/max e desenhar linha
-        // Se for frequencia, é gráfico de barra
-        
-        let chartHtml = '';
+        // 2. Desenho do Gráfico
+        let chartContent = '';
         
         if (state.statsMetric === 'weight') {
-            // GRÁFICO DE LINHA (PESO)
             const cleanData = dataPoints.filter(n => n !== null);
-            if (cleanData.length < 2) {
-                chartHtml = `<div class="h-48 flex flex-col items-center justify-center text-zinc-600 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/50"><i data-lucide="bar-chart-2" class="w-8 h-8 mb-2 opacity-50"></i><p class="text-xs">Dados insuficientes neste período</p></div>`;
+            
+            if (cleanData.length < 1) {
+                chartContent = `
+                    <div class="h-64 flex flex-col items-center justify-center text-zinc-600 bg-zinc-900 rounded-2xl border border-zinc-800">
+                        <i data-lucide="activity" class="w-8 h-8 mb-3 opacity-30"></i>
+                        <p class="text-xs font-medium">Sem dados neste período</p>
+                    </div>
+                `;
             } else {
-                const min = Math.min(...cleanData) - 1;
-                const max = Math.max(...cleanData) + 1;
+                let min = Math.min(...cleanData);
+                let max = Math.max(...cleanData);
+                if (min === max) { min -= 5; max += 5; }
+                const padding = (max - min) * 0.2;
+                min -= padding;
+                max += padding;
                 const range = max - min;
-                
-                // Cria os pontos do SVG
-                let points = '';
-                let lastX = 0;
-                
+
+                let pathD = '';
+                let areaPathD = '';
+                let pointsHtml = '';
+                const stepX = 100 / (dataPoints.length - 1);
+                let hasStarted = false;
+
                 dataPoints.forEach((val, i) => {
                     if (val !== null) {
-                        const x = (i / (dataPoints.length - 1)) * 100;
+                        const x = i * stepX;
                         const y = 100 - ((val - min) / range) * 100;
-                        points += `${x},${y} `;
-                        lastX = x;
                         
-                        // Pontinhos (Círculos)
-                        chartHtml += `<circle cx="${x}%" cy="${y}%" r="3" fill="#a855f7" stroke="black" stroke-width="1" />`;
-                        // Valor acima do ponto
-                        if (dataPoints.length < 15 || i % 2 === 0) { // Não mostra todos se tiver muitos dados
-                             chartHtml += `<text x="${x}%" y="${y - 5}%" fill="white" font-size="3" text-anchor="middle">${val}</text>`;
+                        if (!hasStarted) {
+                            pathD += `M ${x} ${y}`;
+                            areaPathD += `M ${x} ${100} L ${x} ${y}`;
+                            hasStarted = true;
+                        } else {
+                            pathD += ` L ${x} ${y}`;
+                            areaPathD += ` L ${x} ${y}`;
                         }
+
+                        // Bolinhas (Agora sem sombra, apenas borda sólida)
+                        pointsHtml += `
+                            <div class="absolute w-3 h-3 bg-zinc-900 border-2 border-purple-600 rounded-full hover:scale-125 transition-transform cursor-pointer group" 
+                                 style="left: ${x}%; top: ${y}%; transform: translate(-50%, -50%);">
+                                 <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-zinc-800 border border-zinc-700 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                    ${val.toFixed(1)}kg
+                                 </div>
+                            </div>
+                        `;
                     }
                 });
 
-                chartHtml = `
-                    <div class="h-56 w-full relative bg-zinc-900 rounded-2xl border border-zinc-800 p-4 mt-4">
-                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full overflow-visible">
-                            <line x1="0" y1="25" x2="100" y2="25" stroke="#333" stroke-width="0.5" stroke-dasharray="2" />
-                            <line x1="0" y1="50" x2="100" y2="50" stroke="#333" stroke-width="0.5" stroke-dasharray="2" />
-                            <line x1="0" y1="75" x2="100" y2="75" stroke="#333" stroke-width="0.5" stroke-dasharray="2" />
-                            
-                            <polyline fill="none" stroke="#a855f7" stroke-width="2" points="${points}" vector-effect="non-scaling-stroke" />
-                            ${chartHtml}
+                if (hasStarted) {
+                    const lastValidIndex = dataPoints.findLastIndex(v => v !== null);
+                    const lastXValid = lastValidIndex * stepX;
+                    areaPathD += ` L ${lastXValid} 100 Z`; 
+                }
+
+                chartContent = `
+                    <div class="relative h-64 w-full select-none bg-zinc-900 rounded-2xl border border-zinc-800 p-4">
+                        <div class="absolute inset-0 flex flex-col justify-between text-[10px] text-zinc-600 font-mono py-6 px-4">
+                            <div class="border-b border-zinc-800/50 w-full text-right pr-1">${max.toFixed(0)}</div>
+                            <div class="border-b border-zinc-800/50 w-full text-right pr-1">${(min + range*0.5).toFixed(0)}</div>
+                            <div class="border-b border-zinc-800/50 w-full text-right pr-1">${min.toFixed(0)}</div>
+                        </div>
+
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="absolute inset-0 w-full h-full overflow-visible p-4">
+                            <defs>
+                                <linearGradient id="gradientArea" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stop-color="${BRAND_COLOR}" stop-opacity="0.3" />
+                                    <stop offset="100%" stop-color="${BRAND_COLOR}" stop-opacity="0" />
+                                </linearGradient>
+                            </defs>
+                            <path d="${areaPathD}" fill="url(#gradientArea)" stroke="none" />
+                            <path d="${pathD}" fill="none" stroke="${BRAND_COLOR}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
                         </svg>
+
+                        <div class="absolute inset-0 p-4">
+                            ${pointsHtml}
+                        </div>
                         
-                        <div class="flex justify-between mt-2 px-1">
-                            ${labels.map(l => `<span class="text-[9px] text-zinc-500 w-4 text-center">${l}</span>`).join('')}
+                        <div class="absolute bottom-1 left-4 right-4 flex justify-between">
+                            ${labels.map((l) => `
+                                <div style="width: ${100/labels.length}%; text-align: center;" class="text-[9px] text-zinc-500 truncate">
+                                    ${l}
+                                </div>
+                            `).join('')}
                         </div>
                     </div>
                 `;
             }
         } else {
             // GRÁFICO DE BARRAS (FREQUÊNCIA)
-            const maxVal = Math.max(...dataPoints, 5); // Pelo menos 5 pra escala não ficar gigante
-            
+            const maxVal = Math.max(...dataPoints, 5);
             const bars = dataPoints.map((val, i) => {
                 const height = (val / maxVal) * 100;
-                const color = val > 0 ? 'bg-green-500' : 'bg-zinc-800';
+                // Barra sólida, sem sombra
+                const bgClass = val > 0 ? 'bg-purple-600' : 'bg-zinc-800';
+                
                 return `
-                    <div class="flex-1 flex flex-col items-center justify-end group gap-1">
-                        <div class="text-[8px] text-white opacity-0 group-hover:opacity-100 transition-opacity mb-1">${val}</div>
-                        <div class="w-full mx-0.5 rounded-t-sm ${color} transition-all hover:bg-green-400 relative" style="height: ${height}%"></div>
-                        <span class="text-[8px] text-zinc-500 truncate w-full text-center h-3">${labels[i]}</span>
+                    <div class="flex-1 flex flex-col items-center justify-end group gap-1 h-full">
+                        <div class="w-full mx-0.5 rounded-t-sm ${bgClass} transition-all relative" style="height: ${height}%"></div>
+                        <span class="text-[8px] text-zinc-500 truncate w-full text-center h-3 -mb-1">${labels[i]}</span>
                     </div>
                 `;
             }).join('');
 
-            chartHtml = `
-                <div class="h-56 bg-zinc-900 rounded-2xl border border-zinc-800 p-4 mt-4 flex items-end">
+            chartContent = `
+                <div class="h-64 w-full bg-zinc-900 rounded-2xl border border-zinc-800 p-4 pt-8 flex items-end pb-6">
                     ${bars}
                 </div>
             `;
@@ -1898,40 +1927,41 @@ Entendi, vamos treinar!
 
         root.innerHTML = `
             <div class="mb-6 pt-2">
-                <h1 class="text-2xl font-bold text-white mb-1">Sua Evolução</h1>
-                <p class="text-zinc-400 text-sm">Acompanhe seu progresso</p>
+                <h1 class="text-2xl font-bold text-white mb-1 flex items-center gap-2">
+                    <i data-lucide="trending-up" class="text-purple-600"></i> Evolução
+                </h1>
+                <p class="text-zinc-400 text-sm">Visualize seu progresso</p>
             </div>
 
             <div class="bg-zinc-900 p-1 rounded-xl flex gap-1 mb-4 border border-zinc-800">
-                <button onclick="state.statsMetric='weight'; app.render()" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all ${state.statsMetric === 'weight' ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'}">
+                <button onclick="state.statsMetric='weight'; app.render()" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all ${state.statsMetric === 'weight' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}">
                     Peso Corporal
                 </button>
-                <button onclick="state.statsMetric='frequency'; app.render()" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all ${state.statsMetric === 'frequency' ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'}">
+                <button onclick="state.statsMetric='frequency'; app.render()" class="flex-1 py-2 rounded-lg text-xs font-bold transition-all ${state.statsMetric === 'frequency' ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white'}">
                     Frequência
                 </button>
             </div>
 
-            <div class="flex gap-2 justify-center mb-2">
-                <button onclick="state.statsPeriod='week'; app.render()" class="px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${state.statsPeriod === 'week' ? 'bg-purple-600 text-white border-purple-500' : 'bg-transparent text-zinc-500 border-zinc-700'}">Semana</button>
-                <button onclick="state.statsPeriod='month'; app.render()" class="px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${state.statsPeriod === 'month' ? 'bg-purple-600 text-white border-purple-500' : 'bg-transparent text-zinc-500 border-zinc-700'}">Mês</button>
-                <button onclick="state.statsPeriod='year'; app.render()" class="px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${state.statsPeriod === 'year' ? 'bg-purple-600 text-white border-purple-500' : 'bg-transparent text-zinc-500 border-zinc-700'}">Ano</button>
+            ${chartContent}
+
+            <div class="grid grid-cols-3 gap-2 mt-4 mb-4">
+                <button onclick="state.statsPeriod='week'; app.render()" class="py-3 rounded-xl text-xs font-bold border transition-colors ${state.statsPeriod === 'week' ? 'bg-purple-600 text-white border-purple-600' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'}">Semana</button>
+                <button onclick="state.statsPeriod='month'; app.render()" class="py-3 rounded-xl text-xs font-bold border transition-colors ${state.statsPeriod === 'month' ? 'bg-purple-600 text-white border-purple-600' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'}">Mês</button>
+                <button onclick="state.statsPeriod='year'; app.render()" class="py-3 rounded-xl text-xs font-bold border transition-colors ${state.statsPeriod === 'year' ? 'bg-purple-600 text-white border-purple-600' : 'bg-zinc-900 text-zinc-500 border-zinc-800 hover:border-zinc-700'}">Ano</button>
             </div>
 
-            ${chartHtml}
-
-            <div class="grid grid-cols-2 gap-3 mt-4">
+            <div class="grid grid-cols-2 gap-3">
                 <div class="bg-zinc-900 p-4 rounded-2xl border border-zinc-800">
-                    <p class="text-zinc-500 text-xs uppercase font-bold">Total Treinos</p>
-                    <p class="text-2xl font-bold text-white mt-1">
+                    <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-wider">Total Treinos</p>
+                    <p class="text-2xl font-black text-white mt-1 tracking-tight">
                         ${Object.values(state.gymData).filter(x => x.attended).length}
-                        <span class="text-xs font-normal text-zinc-600">dias</span>
                     </p>
                 </div>
+                
                 <div class="bg-zinc-900 p-4 rounded-2xl border border-zinc-800">
-                    <p class="text-zinc-500 text-xs uppercase font-bold">Peso Atual</p>
-                    <p class="text-2xl font-bold text-white mt-1">
-                        ${state.weight || '--'}
-                        <span class="text-xs font-normal text-zinc-600">kg</span>
+                    <p class="text-zinc-500 text-[10px] uppercase font-bold tracking-wider">Peso Atual</p>
+                    <p class="text-2xl font-black text-white mt-1 tracking-tight">
+                        ${state.weight || '--'} <span class="text-sm font-medium text-zinc-600">kg</span>
                     </p>
                 </div>
             </div>
