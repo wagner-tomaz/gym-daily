@@ -648,7 +648,10 @@
           localStorage.setItem("gymDiet", JSON.stringify(state.diet));
           localStorage.setItem("gymTheme", state.theme);
 
-          localStorage.setItem("gymFoodPrices", JSON.stringify(state.foodPrices));
+          localStorage.setItem(
+            "gymFoodPrices",
+            JSON.stringify(state.foodPrices)
+          );
         }
       };
 
@@ -698,12 +701,12 @@
           if (state.showDietModal) renderDietModal(root);
           if (state.showRoutineModal) renderRoutineModal(root);
           if (state.viewingImage) renderImageModal(root);
-          
+
           // AQUI ESTAVA O PROBLEMA: Chamamos a função global (que vou definir abaixo)
           if (state.showFeaturesModal) renderFeaturesModal(root);
-          
+
           if (state.showExercisePicker) renderExercisePicker(root);
-          
+
           // NOVO: Renderiza a Calculadora se estiver ativa
           if (state.showCostModal) renderCostModal(root);
 
@@ -712,45 +715,45 @@
 
         // --- LÓGICA DE PRECIFICAÇÃO (CALCULADORA) ---
         toggleCostModal: () => {
-            state.showCostModal = !state.showCostModal;
-            app.render();
+          state.showCostModal = !state.showCostModal;
+          app.render();
         },
 
         updateFoodPrice: (name, field, value) => {
-            if (!state.foodPrices[name]) {
-                state.foodPrices[name] = { price: 0, size: 1, unit: 'g' };
-            }
-            state.foodPrices[name][field] = parseFloat(value) || 0;
-            saveToStorage();
-            app.render(); 
+          if (!state.foodPrices[name]) {
+            state.foodPrices[name] = { price: 0, size: 1, unit: "g" };
+          }
+          state.foodPrices[name][field] = parseFloat(value) || 0;
+          saveToStorage();
+          app.render();
         },
 
         calculateTotalCost: () => {
-            let dailyTotal = 0;
-            const uniqueItems = {};
+          let dailyTotal = 0;
+          const uniqueItems = {};
 
-            // 1. Somar consumo diário
-            state.diet.forEach(meal => {
-                meal.foods.forEach(food => {
-                    const name = food.name.trim();
-                    if (!name) return;
-                    if (!uniqueItems[name]) uniqueItems[name] = 0;
-                    uniqueItems[name] += parseFloat(food.qty) || 0;
-                });
+          // 1. Somar consumo diário
+          state.diet.forEach((meal) => {
+            meal.foods.forEach((food) => {
+              const name = food.name.trim();
+              if (!name) return;
+              if (!uniqueItems[name]) uniqueItems[name] = 0;
+              uniqueItems[name] += parseFloat(food.qty) || 0;
             });
+          });
 
-            // 2. Calcular custo
-            Object.keys(uniqueItems).forEach(name => {
-                const dailyQty = uniqueItems[name];
-                const pricing = state.foodPrices[name];
+          // 2. Calcular custo
+          Object.keys(uniqueItems).forEach((name) => {
+            const dailyQty = uniqueItems[name];
+            const pricing = state.foodPrices[name];
 
-                if (pricing && pricing.price > 0 && pricing.size > 0) {
-                    const costPerUnit = pricing.price / pricing.size;
-                    dailyTotal += costPerUnit * dailyQty;
-                }
-            });
+            if (pricing && pricing.price > 0 && pricing.size > 0) {
+              const costPerUnit = pricing.price / pricing.size;
+              dailyTotal += costPerUnit * dailyQty;
+            }
+          });
 
-            return { daily: dailyTotal, monthly: dailyTotal * 30 };
+          return { daily: dailyTotal, monthly: dailyTotal * 30 };
         },
 
         // --- LÓGICA DE DETALHES (FEATURES) ---
@@ -763,20 +766,28 @@
         },
 
         toggleFeatureDetails: (id) => {
-            const element = document.getElementById(`feature-details-${id}`);
-            const icon = document.getElementById(`feature-icon-${id}`);
-            
-            if (element && icon) {
-                if (element.classList.contains('hidden')) {
-                    element.classList.remove('hidden');
-                    element.classList.add('animate-in', 'fade-in', 'slide-in-from-top-1');
-                    icon.style.transform = 'rotate(180deg)';
-                } else {
-                    element.classList.add('hidden');
-                    element.classList.remove('animate-in', 'fade-in', 'slide-in-from-top-1');
-                    icon.style.transform = 'rotate(0deg)';
-                }
+          const element = document.getElementById(`feature-details-${id}`);
+          const icon = document.getElementById(`feature-icon-${id}`);
+
+          if (element && icon) {
+            if (element.classList.contains("hidden")) {
+              element.classList.remove("hidden");
+              element.classList.add(
+                "animate-in",
+                "fade-in",
+                "slide-in-from-top-1"
+              );
+              icon.style.transform = "rotate(180deg)";
+            } else {
+              element.classList.add("hidden");
+              element.classList.remove(
+                "animate-in",
+                "fade-in",
+                "slide-in-from-top-1"
+              );
+              icon.style.transform = "rotate(0deg)";
             }
+          }
         },
 
         // --- OUTRAS FUNÇÕES DO APP ---
@@ -915,9 +926,48 @@
           state.pickerFilter = filter;
           app.render();
         },
+        updatePickerGridOnly: () => {
+            const container = document.getElementById("picker-grid-container");
+            if (!container) return; // Se a tela não existir, aborta
+
+            let list = [];
+            // Lógica de Filtro
+            if (state.pickerFilter === "todos") {
+                const all = [...exercisesList.cardio, ...exercisesList.inferior, ...exercisesList.superior];
+                list = [...new Set(all)];
+            } else {
+                list = exercisesList[state.pickerFilter] || [];
+            }
+
+            // Lógica de Busca
+            if (state.pickerSearch) {
+                const term = state.pickerSearch.toLowerCase();
+                list = list.filter((ex) => ex.toLowerCase().includes(term));
+            }
+
+            const gridHtml = list.map((exName) => {
+                const gifUrl = exerciseGifs[exName] || exerciseGifs[exName.replace(" 45°", "")] || exerciseGifs["Outro"];
+                let realType = "superior";
+                if (exercisesList.inferior.includes(exName)) realType = "inferior";
+                else if (exercisesList.cardio.includes(exName)) realType = "cardio";
+                
+                const isUltimate = typeof ultimateList !== "undefined" && ultimateList.includes(exName);
+                const borderClass = isUltimate ? "border-brand border-2" : "border-bordercol";
+                
+                return `<button onclick="app.selectExerciseFromPicker('${escapeHtml(exName)}', '${realType}')" class="flex flex-col gap-2 group active:scale-95 transition-transform text-left"><div class="aspect-square w-full rounded-2xl overflow-hidden border ${borderClass} group-hover:border-brand transition-colors relative bg-surface"><img src="${gifUrl}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100" loading="lazy" onerror="this.onerror=null; this.src='https://placehold.co/100x100/27272a/FFF?text=IMG';"><div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>${isUltimate ? '<div class="absolute top-2 right-2 w-2 h-2 bg-brand rounded-full"></div>' : ""}<div class="absolute bottom-2 left-2 right-2"><p class="text-white text-[10px] font-bold leading-tight text-center line-clamp-2">${escapeHtml(exName)}</p></div></div></button>`;
+            }).join("");
+
+            // Atualiza APENAS o container dos ícones
+            container.innerHTML = list.length > 0 
+                ? `<div class="grid grid-cols-3 gap-3 pb-20">${gridHtml}</div>` 
+                : `<div class="text-center text-txt-dim mt-20 flex flex-col items-center"><i data-lucide="frown" class="w-10 h-10 mb-2 opacity-50"></i><p>Nada encontrado</p></div>`;
+            
+            // Re-renderiza os ícones do lucide dentro do container novo
+            lucide.createIcons();
+        },
         setPickerSearch: (text) => {
-          state.pickerSearch = text;
-          app.render(); // Corrigido para chamar render
+            state.pickerSearch = text;
+            app.updatePickerGridOnly(); // <--- Mágica acontece aqui
         },
         selectExerciseFromPicker: (name, type) => {
           const targetList =
@@ -2098,9 +2148,11 @@
             </div>`
                 )
                 .join("");
-        
+
         // Aqui chamamos o cálculo de total
-        const totals = app.calculateTotalCost ? app.calculateTotalCost() : { monthly: 0 };
+        const totals = app.calculateTotalCost
+          ? app.calculateTotalCost()
+          : { monthly: 0 };
 
         root.innerHTML = `
             <div class="mb-6 pt-2 flex justify-between items-end">
@@ -2112,7 +2164,11 @@
                 <div class="flex gap-2">
                     <button onclick="app.toggleCostModal()" class="bg-surface p-2 rounded-full text-status-success border border-bordercol hover:bg-inputbg transition-colors shadow-sm relative">
                         <i data-lucide="dollar-sign" class="w-5 h-5"></i>
-                        ${totals.monthly > 0 ? `<div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-status-danger rounded-full border-2 border-app"></div>` : ''}
+                        ${
+                          totals.monthly > 0
+                            ? `<div class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-status-danger rounded-full border-2 border-app"></div>`
+                            : ""
+                        }
                     </button>
 
                     ${
@@ -2123,11 +2179,17 @@
                 </div>
             </div>
 
-            ${totals.monthly > 0 ? `
+            ${
+              totals.monthly > 0
+                ? `
             <div onclick="app.toggleCostModal()" class="mb-4 p-3 bg-surface border border-bordercol rounded-xl flex justify-between items-center cursor-pointer hover:border-status-success transition-colors">
                 <span class="text-xs text-txt-dim font-bold uppercase tracking-wider">Gasto Estimado</span>
-                <span class="text-status-success font-bold font-mono">R$ ${totals.monthly.toFixed(2)} <span class="text-[10px] text-txt-dim">/mês</span></span>
-            </div>` : ''}
+                <span class="text-status-success font-bold font-mono">R$ ${totals.monthly.toFixed(
+                  2
+                )} <span class="text-[10px] text-txt-dim">/mês</span></span>
+            </div>`
+                : ""
+            }
 
             <div class="pb-20">
                 ${mealsHtml}
@@ -2141,69 +2203,90 @@
       function renderCostModal(root) {
         const modal = document.createElement("div");
         // Z-Index alto (80) para garantir que fique acima de tudo
-        modal.className = "fixed inset-0 z-[80] bg-black/95 flex flex-col animate-in fade-in duration-200";
+        modal.className =
+          "fixed inset-0 z-[80] bg-black/95 flex flex-col animate-in fade-in duration-200";
 
         // --- 1. Lógica de Cálculo Interna (Blindada) ---
         const uniqueItems = {};
         let dailyTotal = 0;
-        
+
         // Garante que 'diet' é um array antes de tentar ler
         const dietList = Array.isArray(state.diet) ? state.diet : [];
 
-        dietList.forEach(meal => {
-            if(meal.foods && Array.isArray(meal.foods)) {
-                meal.foods.forEach(food => {
-                    const name = food.name ? food.name.trim() : "";
-                    if(name) {
-                        if(!uniqueItems[name]) uniqueItems[name] = { totalQty: 0, unit: food.unit || 'g' };
-                        uniqueItems[name].totalQty += parseFloat(food.qty) || 0;
-                    }
-                });
-            }
+        dietList.forEach((meal) => {
+          if (meal.foods && Array.isArray(meal.foods)) {
+            meal.foods.forEach((food) => {
+              const name = food.name ? food.name.trim() : "";
+              if (name) {
+                if (!uniqueItems[name])
+                  uniqueItems[name] = { totalQty: 0, unit: food.unit || "g" };
+                uniqueItems[name].totalQty += parseFloat(food.qty) || 0;
+              }
+            });
+          }
         });
 
         const itemsList = Object.keys(uniqueItems).sort();
 
         // Calcula o total geral
-        itemsList.forEach(name => {
-             const consumption = uniqueItems[name];
-             const priceData = state.foodPrices[name];
-             if (priceData && priceData.price > 0 && priceData.size > 0) {
-                 const costPerUnit = priceData.price / priceData.size;
-                 dailyTotal += costPerUnit * consumption.totalQty;
-             }
+        itemsList.forEach((name) => {
+          const consumption = uniqueItems[name];
+          const priceData = state.foodPrices[name];
+          if (priceData && priceData.price > 0 && priceData.size > 0) {
+            const costPerUnit = priceData.price / priceData.size;
+            dailyTotal += costPerUnit * consumption.totalQty;
+          }
         });
 
         const monthlyTotal = dailyTotal * 30;
 
         // --- 2. HTML da Lista ---
-        const listHtml = itemsList.map(name => {
+        const listHtml = itemsList
+          .map((name) => {
             const consumption = uniqueItems[name];
             // Recupera preço salvo ou usa vazio
-            const priceData = state.foodPrices[name] || { price: '', size: '', unit: consumption.unit }; 
-            
+            const priceData = state.foodPrices[name] || {
+              price: "",
+              size: "",
+              unit: consumption.unit,
+            };
+
             // Cálculo individual para exibir no card
             let monthlyCostItem = 0;
             if (priceData.price && priceData.size) {
-                monthlyCostItem = ((priceData.price / priceData.size) * consumption.totalQty) * 30;
+              monthlyCostItem =
+                (priceData.price / priceData.size) * consumption.totalQty * 30;
             }
 
             // Define se é kg/L ou unidade para exibição bonita
-            const isWeight = consumption.unit === 'g' || consumption.unit === 'ml';
-            const displayQty = isWeight ? consumption.totalQty * 30 / 1000 : consumption.totalQty * 30;
-            const displayUnit = isWeight ? (consumption.unit === 'g' ? 'kg' : 'L') : 'un';
+            const isWeight =
+              consumption.unit === "g" || consumption.unit === "ml";
+            const displayQty = isWeight
+              ? (consumption.totalQty * 30) / 1000
+              : consumption.totalQty * 30;
+            const displayUnit = isWeight
+              ? consumption.unit === "g"
+                ? "kg"
+                : "L"
+              : "un";
 
             return `
             <div class="bg-surface border border-bordercol rounded-2xl p-4 mb-3 shadow-sm">
                 <div class="flex justify-between items-start mb-3">
                     <div>
-                        <h4 class="text-txt-main font-bold text-sm">${escapeHtml(name)}</h4>
+                        <h4 class="text-txt-main font-bold text-sm">${escapeHtml(
+                          name
+                        )}</h4>
                         <p class="text-txt-dim text-xs mt-0.5">
-                           Consumo mensal: <span class="text-brand font-mono font-bold">${displayQty.toFixed(1)} ${displayUnit}</span>
+                           Consumo mensal: <span class="text-brand font-mono font-bold">${displayQty.toFixed(
+                             1
+                           )} ${displayUnit}</span>
                         </p>
                     </div>
                     <div class="text-right">
-                        <span class="block text-status-success font-bold text-sm">R$ ${monthlyCostItem.toFixed(2)}</span>
+                        <span class="block text-status-success font-bold text-sm">R$ ${monthlyCostItem.toFixed(
+                          2
+                        )}</span>
                         <span class="text-[10px] text-txt-dim">por mês</span>
                     </div>
                 </div>
@@ -2211,18 +2294,27 @@
                 <div class="grid grid-cols-7 gap-2 items-end">
                     <div class="col-span-3">
                         <label class="block text-[9px] text-txt-dim uppercase font-bold mb-1">Preço (R$)</label>
-                        <input type="number" step="0.01" placeholder="0.00" value="${priceData.price}" oninput="app.updateFoodPrice('${name}', 'price', this.value)" class="w-full bg-inputbg border border-bordercol rounded-lg p-2 text-txt-main text-sm outline-none focus:border-brand font-mono">
+                        <input type="number" step="0.01" placeholder="0.00" value="${
+                          priceData.price
+                        }" oninput="app.updateFoodPrice('${name}', 'price', this.value)" class="w-full bg-inputbg border border-bordercol rounded-lg p-2 text-txt-main text-sm outline-none focus:border-brand font-mono">
                     </div>
                     <div class="col-span-3">
                         <label class="block text-[9px] text-txt-dim uppercase font-bold mb-1">Qtd. Pacote</label>
-                        <input type="number" placeholder="${isWeight ? '1000' : '1'}" value="${priceData.size}" oninput="app.updateFoodPrice('${name}', 'size', this.value)" class="w-full bg-inputbg border border-bordercol rounded-lg p-2 text-txt-main text-sm outline-none focus:border-brand font-mono">
+                        <input type="number" placeholder="${
+                          isWeight ? "1000" : "1"
+                        }" value="${
+              priceData.size
+            }" oninput="app.updateFoodPrice('${name}', 'size', this.value)" class="w-full bg-inputbg border border-bordercol rounded-lg p-2 text-txt-main text-sm outline-none focus:border-brand font-mono">
                     </div>
                     <div class="col-span-1">
-                        <span class="flex items-center justify-center h-9 text-xs text-txt-dim font-bold border border-transparent mt-4">${priceData.unit || 'g'}</span>
+                        <span class="flex items-center justify-center h-9 text-xs text-txt-dim font-bold border border-transparent mt-4">${
+                          priceData.unit || "g"
+                        }</span>
                     </div>
                 </div>
             </div>`;
-        }).join("");
+          })
+          .join("");
 
         // --- 3. HTML Principal do Modal ---
         modal.innerHTML = `
@@ -2245,8 +2337,9 @@
                     </p>
                 </div>
 
-                ${itemsList.length > 0 
-                    ? listHtml 
+                ${
+                  itemsList.length > 0
+                    ? listHtml
                     : `<div class="text-center py-10 opacity-50">
                         <i data-lucide="carrot" class="w-12 h-12 mx-auto mb-2 text-txt-dim"></i>
                         <p class="text-txt-dim text-sm">Adicione alimentos na sua dieta primeiro.</p>
@@ -2259,11 +2352,15 @@
             <div class="bg-surface border-t border-bordercol p-4 pb-8 shadow-2xl z-20">
                 <div class="flex justify-between items-center mb-1">
                     <span class="text-txt-dim text-xs uppercase font-bold tracking-wider">Gasto Diário Estimado</span>
-                    <span class="text-txt-main font-bold">R$ ${dailyTotal.toFixed(2)}</span>
+                    <span class="text-txt-main font-bold">R$ ${dailyTotal.toFixed(
+                      2
+                    )}</span>
                 </div>
                 <div class="flex justify-between items-center mt-2">
                     <span class="text-txt-main font-bold text-lg">Total Mensal</span>
-                    <span class="text-status-success font-black text-3xl tracking-tight">R$ ${monthlyTotal.toFixed(2)}</span>
+                    <span class="text-status-success font-black text-3xl tracking-tight">R$ ${monthlyTotal.toFixed(
+                      2
+                    )}</span>
                 </div>
             </div>
         `;
@@ -2729,16 +2826,22 @@
 
       function renderImageModal(root) {
         const modal = document.createElement("div");
-        modal.className = "fixed inset-0 z-[70] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200";
-        
+        modal.className =
+          "fixed inset-0 z-[70] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200";
+
         // Pega os dados do exercício clicado
         const { name, url } = state.viewingImage;
-        
+
         // Pega os detalhes (passos, dicas) ou usa o padrão se não tiver específico
         const details = exerciseDetails[name] || defaultDetails;
-        
+
         // Garante que 'steps' seja um array
-        const steps = Array.isArray(details.steps) ? details.steps : ["Execute o movimento de forma controlada.", "Mantenha a postura correta."];
+        const steps = Array.isArray(details.steps)
+          ? details.steps
+          : [
+              "Execute o movimento de forma controlada.",
+              "Mantenha a postura correta.",
+            ];
 
         modal.innerHTML = `
             <div class="bg-app w-full max-w-md rounded-3xl border border-bordercol shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -2764,7 +2867,10 @@
                                 <i data-lucide="activity" class="w-4 h-4"></i> Músculos Alvo
                             </h4>
                             <p class="text-txt-main text-sm font-medium leading-relaxed">
-                                ${details.muscles || "Musculatura geral do exercício."}
+                                ${
+                                  details.muscles ||
+                                  "Musculatura geral do exercício."
+                                }
                             </p>
                         </div>
 
@@ -2773,12 +2879,18 @@
                                 <i data-lucide="play-circle" class="w-4 h-4"></i> Execução
                             </h4>
                             <ul class="space-y-3">
-                                ${steps.map((step, i) => `
+                                ${steps
+                                  .map(
+                                    (step, i) => `
                                     <li class="flex gap-3 text-sm text-txt-main">
-                                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-brand/10 text-brand flex items-center justify-center text-xs font-bold border border-brand/20">${i + 1}</span>
+                                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-brand/10 text-brand flex items-center justify-center text-xs font-bold border border-brand/20">${
+                                          i + 1
+                                        }</span>
                                         <span class="leading-snug pt-0.5">${step}</span>
                                     </li>
-                                `).join('')}
+                                `
+                                  )
+                                  .join("")}
                             </ul>
                         </div>
 
@@ -2787,7 +2899,10 @@
                                 <i data-lucide="lightbulb" class="w-4 h-4"></i> Dica Importante
                             </h4>
                             <p class="text-status-info text-sm leading-relaxed font-medium">
-                                ${details.tips || "Concentre-se na conexão mente-músculo e respire corretamente."}
+                                ${
+                                  details.tips ||
+                                  "Concentre-se na conexão mente-músculo e respire corretamente."
+                                }
                             </p>
                         </div>
                     </div>
@@ -2800,7 +2915,7 @@
                 </div>
             </div>
         `;
-        
+
         root.appendChild(modal);
         // Recarrega os ícones dentro do modal
         lucide.createIcons();
@@ -2808,81 +2923,103 @@
 
       function renderFeaturesModal(root) {
         const modal = document.createElement("div");
-        modal.className = "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200";
+        modal.className =
+          "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200";
 
         // AQUI ESTÃO OS TEXTOS NOVOS E DETALHADOS
         const features = [
-            { 
-                id: 'daily',
-                icon: "calendar-check", 
-                title: "Diário de Treino", 
-                desc: "Gerencie sua frequência e histórico.",
-                details: "O coração do app. Marque seus dias como 'Treino', 'Descanso' ou 'Falta'. Ao registrar um treino, você seleciona a ficha usada, anota as cargas, como se sentiu e pode até salvar uma foto do shape."
-            },
-            { 
-                id: 'routines',
-                icon: "clipboard-list", 
-                title: "Montagem de Fichas", 
-                desc: "Crie treinos ABC, ABCD ou personalizados.",
-                details: "Liberdade total. Crie rotinas ilimitadas. Adicione exercícios para cada dia da semana, reordene a lista e edite séries e repetições a qualquer momento."
-            },
-            { 
-                id: 'gifs',
-                icon: "play-circle", 
-                title: "Biblioteca Visual (GIFs)", 
-                desc: "Aprenda a execução correta.",
-                details: "Não fique na dúvida. Ao clicar no exercício da sua ficha, você vê um GIF da execução, lista de músculos trabalhados e 'Dicas de Mestre' para melhorar sua técnica."
-            },
-            { 
-                id: 'diet',
-                icon: "utensils", 
-                title: "Gestão de Dieta", 
-                desc: "Planeje suas refeições e horários.",
-                details: "Crie seu cardápio diário definindo horários e alimentos. Se ativar as notificações, o app te avisa 15 minutos antes de cada refeição."
-            },
-            { 
-                id: 'tools',
-                icon: "wrench", 
-                title: "Ferramentas Úteis", 
-                desc: "Cronômetro, Medidas e Checklist.",
-                details: "Use o Cronômetro para descanso, registre suas medidas corporais (braço, peito, perna) e use o Checklist diário para marcar hábitos (Água, Creatina, Sono)."
-            },
-            { 
-                id: 'cloud',
-                icon: "cloud", 
-                title: "Backup na Nuvem", 
-                desc: "Seus dados salvos no Google.",
-                details: "Faça login com sua conta Google para sincronizar tudo. Se trocar de celular ou formatar, seus dados estarão salvos."
-            },
-            { 
-                id: 'ui',
-                icon: "moon", 
-                title: "Personalização", 
-                desc: "Temas Claro e Escuro.",
-                details: "Escolha o visual. O modo Dark economiza bateria, enquanto o novo modo Light (Lavanda) oferece uma interface limpa e moderna."
-            }
+          {
+            id: "daily",
+            icon: "calendar-check",
+            title: "Diário de Treino",
+            desc: "Gerencie sua frequência e histórico.",
+            details:
+              "O coração do app. Marque seus dias como 'Treino', 'Descanso' ou 'Falta'. Ao registrar um treino, você seleciona a ficha usada, anota as cargas, como se sentiu e pode até salvar uma foto do shape.",
+          },
+          {
+            id: "routines",
+            icon: "clipboard-list",
+            title: "Montagem de Fichas",
+            desc: "Crie treinos ABC, ABCD ou personalizados.",
+            details:
+              "Liberdade total. Crie rotinas ilimitadas. Adicione exercícios para cada dia da semana, reordene a lista e edite séries e repetições a qualquer momento.",
+          },
+          {
+            id: "gifs",
+            icon: "play-circle",
+            title: "Biblioteca Visual (GIFs)",
+            desc: "Aprenda a execução correta.",
+            details:
+              "Não fique na dúvida. Ao clicar no exercício da sua ficha, você vê um GIF da execução, lista de músculos trabalhados e 'Dicas de Mestre' para melhorar sua técnica.",
+          },
+          {
+            id: "diet",
+            icon: "utensils",
+            title: "Gestão de Dieta",
+            desc: "Planeje suas refeições e horários.",
+            details:
+              "Crie seu cardápio diário definindo horários e alimentos. Se ativar as notificações, o app te avisa 15 minutos antes de cada refeição.",
+          },
+          {
+            id: "tools",
+            icon: "wrench",
+            title: "Ferramentas Úteis",
+            desc: "Cronômetro, Medidas e Checklist.",
+            details:
+              "Use o Cronômetro para descanso, registre suas medidas corporais (braço, peito, perna) e use o Checklist diário para marcar hábitos (Água, Creatina, Sono).",
+          },
+          {
+            id: "cloud",
+            icon: "cloud",
+            title: "Backup na Nuvem",
+            desc: "Seus dados salvos no Google.",
+            details:
+              "Faça login com sua conta Google para sincronizar tudo. Se trocar de celular ou formatar, seus dados estarão salvos.",
+          },
+          {
+            id: "ui",
+            icon: "moon",
+            title: "Personalização",
+            desc: "Temas Claro e Escuro.",
+            details:
+              "Escolha o visual. O modo Dark economiza bateria, enquanto o novo modo Light (Lavanda) oferece uma interface limpa e moderna.",
+          },
         ];
 
-        const featuresHtml = features.map(f => `
-            <div onclick="app.toggleFeatureDetails('${f.id}')" class="group bg-surface border border-bordercol rounded-2xl overflow-hidden cursor-pointer hover:border-brand transition-all active:scale-[0.99] mb-3">
+        const featuresHtml = features
+          .map(
+            (f) => `
+            <div onclick="app.toggleFeatureDetails('${
+              f.id
+            }')" class="group bg-surface border border-bordercol rounded-2xl overflow-hidden cursor-pointer hover:border-brand transition-all active:scale-[0.99] mb-3">
                 <div class="flex items-center gap-4 p-4">
                     <div class="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand flex-shrink-0 group-hover:bg-brand group-hover:text-white transition-colors">
                         <i data-lucide="${f.icon}" class="w-5 h-5"></i>
                     </div>
                     <div class="flex-1">
-                        <h4 class="text-txt-main font-bold text-sm mb-0.5">${escapeHtml(f.title)}</h4>
-                        <p class="text-txt-dim text-xs">${escapeHtml(f.desc)}</p>
+                        <h4 class="text-txt-main font-bold text-sm mb-0.5">${escapeHtml(
+                          f.title
+                        )}</h4>
+                        <p class="text-txt-dim text-xs">${escapeHtml(
+                          f.desc
+                        )}</p>
                     </div>
-                    <i id="feature-icon-${f.id}" data-lucide="chevron-down" class="w-5 h-5 text-txt-dim transition-transform duration-300"></i>
+                    <i id="feature-icon-${
+                      f.id
+                    }" data-lucide="chevron-down" class="w-5 h-5 text-txt-dim transition-transform duration-300"></i>
                 </div>
                 
-                <div id="feature-details-${f.id}" class="hidden bg-inputbg border-t border-bordercol p-4 animate-in fade-in slide-in-from-top-1">
+                <div id="feature-details-${
+                  f.id
+                }" class="hidden bg-inputbg border-t border-bordercol p-4 animate-in fade-in slide-in-from-top-1">
                     <p class="text-txt-main text-xs leading-relaxed opacity-80">
                         ${escapeHtml(f.details)}
                     </p>
                 </div>
             </div>
-        `).join("");
+        `
+          )
+          .join("");
 
         modal.innerHTML = `
             <div class="bg-app w-full max-w-md rounded-3xl border border-bordercol shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
